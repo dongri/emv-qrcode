@@ -7,17 +7,27 @@ import (
 )
 
 func main() {
+
+	AcquirerIIN := "111"
+	ForwardingIIN := "222"
+	MerchantID := "123456789012345"
+	mai := AcquirerIIN + ForwardingIIN + MerchantID
+
 	emvqr := new(emvco.EMVQR)
 	emvqr.PayloadFormatIndicator = "01"
 	emvqr.PointOfInitiationMethod = "12" // 11 is static qrcode
-	emvqr.MerchantAccountInformation = "9090909090"
+	emvqr.MerchantAccountInformation = mai
 	emvqr.MerchantCategoryCode = "5311"
-	emvqr.TransactionCurrency = "165"
+	emvqr.TransactionCurrency = "392"
 	emvqr.TransactionAmount = 999
 	emvqr.CountryCode = "JP"
-	emvqr.MerchantName = "DongriShop"
-	emvqr.MerchantCity = "Tokyo"
-	emvqr.PostalCode = "1360076"
+	emvqr.MerchantName = "DONGRI"
+	emvqr.MerchantCity = "TOKYO"
+
+	emvqr.BillNumber = "JPU20181018123456123456"
+	emvqr.ReferenceLabel = "JPU20181018123456123456"
+	emvqr.TerminalLabel = "123456"
+
 	s := emvqr.GeneratePayload()
 	fmt.Println(s)
 }

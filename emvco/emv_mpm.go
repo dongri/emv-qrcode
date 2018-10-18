@@ -1,7 +1,6 @@
 package emvco
 
 import (
-	"encoding/hex"
 	"fmt"
 	"strconv"
 	"strings"
@@ -31,6 +30,22 @@ const (
 	IDUnreservedTemplates                 = "80" // 80-99 Unreserved Templates
 )
 
+// const ...
+const (
+	IDBillNumber                    = "01"
+	IDMobileNumber                  = "02"
+	IDStoreLabel                    = "03"
+	IDLoyaltyNumber                 = "04"
+	IDReferenceLabel                = "05"
+	IDCustomerLabel                 = "06"
+	IDTerminalLabel                 = "07"
+	IDPurposeTransaction            = "08"
+	IDAdditionalConsumerDataRequest = "09"
+
+	IDLanguageReference             = "00"
+	IDMerchantNameAlternateLanguage = "01"
+)
+
 // EMVQR ...
 type EMVQR struct {
 	PayloadFormatIndicator              string
@@ -51,6 +66,11 @@ type EMVQR struct {
 	MerchantInformationLanguageTemplate string
 	RFUForEMVCo                         string
 	UnreservedTemplates                 string
+	BillNumber                          string
+	ReferenceLabel                      string
+	TerminalLabel                       string
+	LanguageReference                   string
+	MerchantNameAlternateLanguage       string
 }
 
 // GeneratePayload ...
@@ -65,9 +85,16 @@ func (c *EMVQR) GeneratePayload() string {
 	s += format(IDMerchantName, c.MerchantName)
 	s += format(IDMerchantCity, c.MerchantCity)
 	s += format(IDPostalCode, c.PostalCode)
+	s += format(IDAdditionalDataFieldTemplate,
+		format(IDBillNumber, c.BillNumber)+
+			format(IDReferenceLabel, c.ReferenceLabel)+
+			format(IDTerminalLabel, c.TerminalLabel))
 
-	table := crc16.MakeTable(crc16.CRC16_XMODEM)
+	//s = "00020101021229300012D156000000000510A93FO3230Q31280012D15600000001030812345678520441115802CN5914BEST TRANSPORT6007BEIJING64200002ZH0104最佳运输0202北京540523.7253031565502016233030412340603***0708A60086670902ME91320016A011223344998877070812345678"
+
+	table := crc16.MakeTable(crc16.CRC16_CCITT_FALSE)
 	crc := crc16.Checksum([]byte(s+IDCRC+"04"), table)
+
 	crcStr := formatCrc(crc)
 	s += format(IDCRC, crcStr)
 	return s
@@ -80,11 +107,11 @@ func format(id, value string) string {
 }
 
 func formatAmount(amount float64) string {
-	return fmt.Sprintf("%.2f", amount)
+	return fmt.Sprintf("%.0f", amount)
 }
 
 func formatCrc(crcValue uint16) string {
-	crcValueString := strconv.FormatUint(uint64(crcValue), 10)
-	s := "0000" + strings.ToUpper(hex.EncodeToString([]byte(crcValueString)))
+	crcValueString := strconv.FormatUint(uint64(crcValue), 16)
+	s := "0000" + strings.ToUpper(crcValueString)
 	return s[len(s)-4:]
 }
