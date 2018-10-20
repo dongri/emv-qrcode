@@ -48,8 +48,8 @@ const (
 
 // EMVQR ...
 type EMVQR struct {
-	PayloadFormatIndicator              string
-	PointOfInitiationMethod             string
+	PayloadFormatIndicator              PayloadFormatIndicator
+	PointOfInitiationMethod             PointOfInitiationMethod
 	MerchantAccountInformation          string
 	MerchantCategoryCode                string
 	TransactionCurrency                 string
@@ -73,10 +73,30 @@ type EMVQR struct {
 	MerchantNameAlternateLanguage       string
 }
 
+// PayloadFormatIndicator ...
+type PayloadFormatIndicator struct {
+	ID    string
+	Value string
+}
+
+// PointOfInitiationMethod ...
+type PointOfInitiationMethod struct {
+	ID    string
+	Value string
+}
+
+// SetPayloadFormatIndicator ...
+func (c *EMVQR) SetPayloadFormatIndicator(value string) {
+	payloadFormatIndicator := new(PayloadFormatIndicator)
+	payloadFormatIndicator.ID = "00"
+	payloadFormatIndicator.Value = value
+	c.PayloadFormatIndicator = *payloadFormatIndicator
+}
+
 // GeneratePayload ...
 func (c *EMVQR) GeneratePayload() string {
-	s := format(IDPayloadFormatIndicator, c.PayloadFormatIndicator)
-	s += format(IDPointOfInitiationMethod, c.PointOfInitiationMethod)
+	s := format(c.PayloadFormatIndicator.ID, c.PayloadFormatIndicator.Value)
+	s += format(c.PointOfInitiationMethod.ID, c.PointOfInitiationMethod.Value)
 	s += format(IDMerchantAccountInformation, c.MerchantAccountInformation)
 	s += format(IDMerchantCategoryCode, c.MerchantCategoryCode)
 	s += format(IDTransactionCurrency, c.TransactionCurrency)
