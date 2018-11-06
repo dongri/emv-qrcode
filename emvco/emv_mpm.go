@@ -30,20 +30,27 @@ const (
 	IDUnreservedTemplates                 = "80" // (O) 80-99 Unreserved Templates
 )
 
-// const ...
+// Data Objects for Additional Data Field Template (ID "62")
 const (
-	IDBillNumber                    = "01"
-	IDMobileNumber                  = "02"
-	IDStoreLabel                    = "03"
-	IDLoyaltyNumber                 = "04"
-	IDReferenceLabel                = "05"
-	IDCustomerLabel                 = "06"
-	IDTerminalLabel                 = "07"
-	IDPurposeTransaction            = "08"
-	IDAdditionalConsumerDataRequest = "09"
+	AdditionalIDBillNumber                     = "01"
+	AdditionalIDMobileNumber                   = "02"
+	AdditionalIDStoreLabel                     = "03"
+	AdditionalIDLoyaltyNumber                  = "04"
+	AdditionalIDReferenceLabel                 = "05"
+	AdditionalIDCustomerLabel                  = "06"
+	AdditionalIDTerminalLabel                  = "07"
+	AdditionalIDPurposeTransaction             = "08"
+	AdditionalIDAdditionalConsumerDataRequest  = "09"
+	AdditionalIDRFUforEMVCo                    = "10" // 10-49
+	AdditionalIDPaymentSystemSpecificTemplates = "50" // 50-99
+)
 
-	IDLanguageReference             = "00"
-	IDMerchantNameAlternateLanguage = "01"
+// Data Objects for Merchant Information—Language Template (ID "64")
+const (
+	MerchantInformationIDLanguagePreference = "00"
+	MerchantInformationIDMerchantName       = "01"
+	MerchantInformationIDMerchantCity       = "02"
+	MerchantInformationIDRFUforEMVCo        = "03" // 03-99
 )
 
 // EMVQR ...
@@ -106,9 +113,9 @@ func (c *EMVQR) GeneratePayload() string {
 	s += format(IDMerchantCity, c.MerchantCity)
 	s += format(IDPostalCode, c.PostalCode)
 	s += format(IDAdditionalDataFieldTemplate,
-		format(IDBillNumber, c.BillNumber)+
-			format(IDReferenceLabel, c.ReferenceLabel)+
-			format(IDTerminalLabel, c.TerminalLabel))
+		format(AdditionalIDBillNumber, c.BillNumber)+
+			format(AdditionalIDReferenceLabel, c.ReferenceLabel)+
+			format(AdditionalIDTerminalLabel, c.TerminalLabel))
 
 	//s = "00020101021229300012D156000000000510A93FO3230Q31280012D15600000001030812345678520441115802CN5914BEST TRANSPORT6007BEIJING64200002ZH0104最佳运输0202北京540523.7253031565502016233030412340603***0708A60086670902ME91320016A011223344998877070812345678"
 
