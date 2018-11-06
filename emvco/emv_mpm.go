@@ -10,24 +10,24 @@ import (
 
 // const ....
 const (
-	IDPayloadFormatIndicator              = "00" // Payload Format Indicator
-	IDPointOfInitiationMethod             = "01" // Point of Initiation Method
-	IDMerchantAccountInformation          = "15" // 02-51 Merchant Account Information (At least one Merchant Account Information data object shall be present.)
-	IDMerchantCategoryCode                = "52" // Merchant Category Code
-	IDTransactionCurrency                 = "53" // Transaction Currency
-	IDTransactionAmount                   = "54" // Transaction Amount
-	IDTipOrConvenienceIndicator           = "55" // Tip or Convenience Indicator
-	IDValueOfConvenienceFeeFixed          = "56" // Value of Convenience Fee Fixed
-	IDValueOfConvenienceFeePercentage     = "57" // Value of Convenience Fee Percentage
-	IDCountryCode                         = "58" // Country Code
-	IDMerchantName                        = "59" // Merchant Name
-	IDMerchantCity                        = "60" // Merchant City
-	IDPostalCode                          = "61" // Postal Code
-	IDAdditionalDataFieldTemplate         = "62" // Additional Data Field Template
-	IDCRC                                 = "63" // CRC
-	IDMerchantInformationLanguageTemplate = "64" // Merchant Information— Language Template
-	IDRFUForEMVCo                         = "65" // 65-79 RFU for EMVCo
-	IDUnreservedTemplates                 = "80" // 80-99 Unreserved Templates
+	IDPayloadFormatIndicator              = "00" // (M) Payload Format Indicator
+	IDPointOfInitiationMethod             = "01" // (O) Point of Initiation Method
+	IDMerchantAccountInformation          = "15" // (M) 02-51 Merchant Account Information (At least one Merchant Account Information data object shall be present.)
+	IDMerchantCategoryCode                = "52" // (M) Merchant Category Code
+	IDTransactionCurrency                 = "53" // (M) Transaction Currency
+	IDTransactionAmount                   = "54" // (C) Transaction Amount
+	IDTipOrConvenienceIndicator           = "55" // (O) Tip or Convenience Indicator
+	IDValueOfConvenienceFeeFixed          = "56" // (C) Value of Convenience Fee Fixed
+	IDValueOfConvenienceFeePercentage     = "57" // (C) Value of Convenience Fee Percentage
+	IDCountryCode                         = "58" // (M) Country Code
+	IDMerchantName                        = "59" // (M) Merchant Name
+	IDMerchantCity                        = "60" // (M) Merchant City
+	IDPostalCode                          = "61" // (O) Postal Code
+	IDAdditionalDataFieldTemplate         = "62" // (O) Additional Data Field Template
+	IDCRC                                 = "63" // (M) CRC
+	IDMerchantInformationLanguageTemplate = "64" // (O) Merchant Information— Language Template
+	IDRFUForEMVCo                         = "65" // (O) 65-79 RFU for EMVCo
+	IDUnreservedTemplates                 = "80" // (O) 80-99 Unreserved Templates
 )
 
 // const ...
