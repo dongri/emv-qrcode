@@ -8,18 +8,6 @@ import (
 	"github.com/dongri/emvco-qrcode/crc16"
 )
 
-// BasePayload ...
-type BasePayload interface {
-	PayloadFormatIndicator() string
-	MerchantAccountInformation() string
-	MerchantCategoryCode() string
-	TransactionCurrency() string
-	CountryCode() string
-	MerchantName() string
-	MerchantCity() string
-	CRC() string
-}
-
 // const ....
 const (
 	IDPayloadFormatIndicator              = "00" // (M) Payload Format Indicator
@@ -111,22 +99,30 @@ type MerchantInformationLanguageTemplate struct {
 }
 
 // GeneratePayload ...
-func (c *EMVQR) GeneratePayload() string {
+func (c *EMVQR) GeneratePayload() (string, error) {
 	s := ""
 	if c.PayloadFormatIndicator != "" {
 		s += format(IDPayloadFormatIndicator, c.PayloadFormatIndicator)
+	} else {
+		return "", fmt.Errorf("PayloadFormatIndicator is mandatory")
 	}
 	if c.PointOfInitiationMethod != "" {
 		s += format(IDPointOfInitiationMethod, c.PointOfInitiationMethod)
 	}
 	if c.MerchantAccountInformation != "" {
 		s += format(IDMerchantAccountInformation, c.MerchantAccountInformation)
+	} else {
+		return "", fmt.Errorf("MerchantAccountInformation is mandatory")
 	}
 	if c.MerchantCategoryCode != "" {
 		s += format(IDMerchantCategoryCode, c.MerchantCategoryCode)
+	} else {
+		return "", fmt.Errorf("MerchantCategoryCode is mandatory")
 	}
 	if c.TransactionCurrency != "" {
 		s += format(IDTransactionCurrency, c.TransactionCurrency)
+	} else {
+		return "", fmt.Errorf("TransactionCurrency is mandatory")
 	}
 	if c.TransactionAmount > 0 {
 		s += format(IDTransactionAmount, formatAmount(c.TransactionAmount))
@@ -142,12 +138,18 @@ func (c *EMVQR) GeneratePayload() string {
 	}
 	if c.CountryCode != "" {
 		s += format(IDCountryCode, c.CountryCode)
+	} else {
+		return "", fmt.Errorf("CountryCode is mandatory")
 	}
 	if c.MerchantName != "" {
 		s += format(IDMerchantName, c.MerchantName)
+	} else {
+		return "", fmt.Errorf("MerchantName is mandatory")
 	}
 	if c.MerchantCity != "" {
 		s += format(IDMerchantCity, c.MerchantCity)
+	} else {
+		return "", fmt.Errorf("MerchantCity is mandatory")
 	}
 	if c.PostalCode != "" {
 		s += format(IDPostalCode, c.PostalCode)
@@ -217,7 +219,7 @@ func (c *EMVQR) GeneratePayload() string {
 	if c.UnreservedTemplates != "" {
 		s += format(IDUnreservedTemplates, c.UnreservedTemplates)
 	}
-	return s
+	return s, nil
 }
 
 func format(id, value string) string {

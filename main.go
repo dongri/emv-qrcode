@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/dongri/emvco-qrcode/emvco"
 )
@@ -25,6 +26,10 @@ func main() {
 
 	emvqr.AdditionalDataFieldTemplate = *additionalTemplate
 
-	qrcodeData := emvqr.GeneratePayload()
+	qrcodeData, err := emvqr.GeneratePayload()
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
 	fmt.Println(qrcodeData)
 }

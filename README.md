@@ -19,6 +19,10 @@ additionalTemplate.TerminalLabel = "piyo"
 
 emvqr.AdditionalDataFieldTemplate = *additionalTemplate
 
-qrcodeData := emvqr.GeneratePayload()
+qrcodeData, err := emvqr.GeneratePayload()
+if err != nil {
+  log.Println(err.Error())
+  return
+}
 fmt.Println(qrcodeData)
 ```
