@@ -8,6 +8,18 @@ import (
 	"github.com/dongri/emvco-qrcode/crc16"
 )
 
+// BasePayload ...
+type BasePayload interface {
+	PayloadFormatIndicator() string
+	MerchantAccountInformation() string
+	MerchantCategoryCode() string
+	TransactionCurrency() string
+	CountryCode() string
+	MerchantName() string
+	MerchantCity() string
+	CRC() string
+}
+
 // const ....
 const (
 	IDPayloadFormatIndicator              = "00" // (M) Payload Format Indicator
@@ -55,8 +67,8 @@ const (
 
 // EMVQR ...
 type EMVQR struct {
-	PayloadFormatIndicator              PayloadFormatIndicator
-	PointOfInitiationMethod             PointOfInitiationMethod
+	PayloadFormatIndicator              string
+	PointOfInitiationMethod             string
 	MerchantAccountInformation          string
 	MerchantCategoryCode                string
 	TransactionCurrency                 string
@@ -68,62 +80,143 @@ type EMVQR struct {
 	MerchantName                        string
 	MerchantCity                        string
 	PostalCode                          string
-	AdditionalDataFieldTemplate         string
+	AdditionalDataFieldTemplate         AdditionalDataFieldTemplate
 	CRC                                 string
-	MerchantInformationLanguageTemplate string
+	MerchantInformationLanguageTemplate MerchantInformationLanguageTemplate
 	RFUForEMVCo                         string
 	UnreservedTemplates                 string
-	BillNumber                          string
-	ReferenceLabel                      string
-	TerminalLabel                       string
-	LanguageReference                   string
-	MerchantNameAlternateLanguage       string
 }
 
-// PayloadFormatIndicator ...
-type PayloadFormatIndicator struct {
-	ID    string
-	Value string
+// AdditionalDataFieldTemplate ...
+type AdditionalDataFieldTemplate struct {
+	BillNumber                     string
+	MobileNumber                   string
+	StoreLabel                     string
+	LoyaltyNumber                  string
+	ReferenceLabel                 string
+	CustomerLabel                  string
+	TerminalLabel                  string
+	PurposeTransaction             string
+	AdditionalConsumerDataRequest  string
+	RFUforEMVCo                    string // 10-49
+	PaymentSystemSpecificTemplates string // 50-99
 }
 
-// PointOfInitiationMethod ...
-type PointOfInitiationMethod struct {
-	ID    string
-	Value string
-}
-
-// SetPayloadFormatIndicator ...
-func (c *EMVQR) SetPayloadFormatIndicator(value string) {
-	payloadFormatIndicator := new(PayloadFormatIndicator)
-	payloadFormatIndicator.ID = "00"
-	payloadFormatIndicator.Value = value
-	c.PayloadFormatIndicator = *payloadFormatIndicator
+// MerchantInformationLanguageTemplate ...
+type MerchantInformationLanguageTemplate struct {
+	LanguagePreference string
+	MerchantName       string
+	MerchantCity       string
+	RFUforEMVCo        string // 03-99
 }
 
 // GeneratePayload ...
 func (c *EMVQR) GeneratePayload() string {
-	s := format(c.PayloadFormatIndicator.ID, c.PayloadFormatIndicator.Value)
-	s += format(c.PointOfInitiationMethod.ID, c.PointOfInitiationMethod.Value)
-	s += format(IDMerchantAccountInformation, c.MerchantAccountInformation)
-	s += format(IDMerchantCategoryCode, c.MerchantCategoryCode)
-	s += format(IDTransactionCurrency, c.TransactionCurrency)
-	s += format(IDTransactionAmount, formatAmount(c.TransactionAmount))
-	s += format(IDCountryCode, c.CountryCode)
-	s += format(IDMerchantName, c.MerchantName)
-	s += format(IDMerchantCity, c.MerchantCity)
-	s += format(IDPostalCode, c.PostalCode)
-	s += format(IDAdditionalDataFieldTemplate,
-		format(AdditionalIDBillNumber, c.BillNumber)+
-			format(AdditionalIDReferenceLabel, c.ReferenceLabel)+
-			format(AdditionalIDTerminalLabel, c.TerminalLabel))
-
-	//s = "00020101021229300012D156000000000510A93FO3230Q31280012D15600000001030812345678520441115802CN5914BEST TRANSPORT6007BEIJING64200002ZH0104最佳运输0202北京540523.7253031565502016233030412340603***0708A60086670902ME91320016A011223344998877070812345678"
-
+	s := ""
+	if c.PayloadFormatIndicator != "" {
+		s += format(IDPayloadFormatIndicator, c.PayloadFormatIndicator)
+	}
+	if c.PointOfInitiationMethod != "" {
+		s += format(IDPointOfInitiationMethod, c.PointOfInitiationMethod)
+	}
+	if c.MerchantAccountInformation != "" {
+		s += format(IDMerchantAccountInformation, c.MerchantAccountInformation)
+	}
+	if c.MerchantCategoryCode != "" {
+		s += format(IDMerchantCategoryCode, c.MerchantCategoryCode)
+	}
+	if c.TransactionCurrency != "" {
+		s += format(IDTransactionCurrency, c.TransactionCurrency)
+	}
+	if c.TransactionAmount > 0 {
+		s += format(IDTransactionAmount, formatAmount(c.TransactionAmount))
+	}
+	if c.TipOrConvenienceIndicator != "" {
+		s += format(IDTipOrConvenienceIndicator, c.TipOrConvenienceIndicator)
+	}
+	if c.ValueOfConvenienceFeeFixed != "" {
+		s += format(IDValueOfConvenienceFeeFixed, c.ValueOfConvenienceFeeFixed)
+	}
+	if c.ValueOfConvenienceFeePercentage != "" {
+		s += format(IDValueOfConvenienceFeePercentage, c.ValueOfConvenienceFeePercentage)
+	}
+	if c.CountryCode != "" {
+		s += format(IDCountryCode, c.CountryCode)
+	}
+	if c.MerchantName != "" {
+		s += format(IDMerchantName, c.MerchantName)
+	}
+	if c.MerchantCity != "" {
+		s += format(IDMerchantCity, c.MerchantCity)
+	}
+	if c.PostalCode != "" {
+		s += format(IDPostalCode, c.PostalCode)
+	}
+	if (AdditionalDataFieldTemplate{}) != c.AdditionalDataFieldTemplate {
+		t := c.AdditionalDataFieldTemplate
+		template := ""
+		if t.BillNumber != "" {
+			template += format(AdditionalIDBillNumber, t.BillNumber)
+		}
+		if t.MobileNumber != "" {
+			template += format(AdditionalIDMobileNumber, t.MobileNumber)
+		}
+		if t.StoreLabel != "" {
+			template += format(AdditionalIDStoreLabel, t.StoreLabel)
+		}
+		if t.LoyaltyNumber != "" {
+			template += format(AdditionalIDLoyaltyNumber, t.LoyaltyNumber)
+		}
+		if t.ReferenceLabel != "" {
+			template += format(AdditionalIDReferenceLabel, t.ReferenceLabel)
+		}
+		if t.CustomerLabel != "" {
+			template += format(AdditionalIDCustomerLabel, t.CustomerLabel)
+		}
+		if t.TerminalLabel != "" {
+			template += format(AdditionalIDTerminalLabel, t.TerminalLabel)
+		}
+		if t.PurposeTransaction != "" {
+			template += format(AdditionalIDPurposeTransaction, t.PurposeTransaction)
+		}
+		if t.AdditionalConsumerDataRequest != "" {
+			template += format(AdditionalIDAdditionalConsumerDataRequest, t.AdditionalConsumerDataRequest)
+		}
+		if t.RFUforEMVCo != "" {
+			template += format(AdditionalIDRFUforEMVCo, t.RFUforEMVCo)
+		} // 10-49
+		if t.PaymentSystemSpecificTemplates != "" {
+			template += format(AdditionalIDPaymentSystemSpecificTemplates, t.PaymentSystemSpecificTemplates)
+		} // 50-99
+		s += format(IDAdditionalDataFieldTemplate, template)
+	}
 	table := crc16.MakeTable(crc16.CRC16_CCITT_FALSE)
 	crc := crc16.Checksum([]byte(s+IDCRC+"04"), table)
-
 	crcStr := formatCrc(crc)
 	s += format(IDCRC, crcStr)
+	if (MerchantInformationLanguageTemplate{}) != c.MerchantInformationLanguageTemplate {
+		t := c.MerchantInformationLanguageTemplate
+		template := ""
+		if t.LanguagePreference != "" {
+			template += format(MerchantInformationIDLanguagePreference, t.LanguagePreference)
+		}
+		if t.MerchantName != "" {
+			template += format(MerchantInformationIDMerchantName, t.MerchantName)
+		}
+		if t.MerchantCity != "" {
+			template += format(MerchantInformationIDMerchantCity, t.MerchantCity)
+		}
+		if t.RFUforEMVCo != "" {
+			template += format(MerchantInformationIDRFUforEMVCo, t.RFUforEMVCo)
+		} // 03-99
+		s += format(IDMerchantInformationLanguageTemplate, template)
+	}
+	if c.RFUForEMVCo != "" {
+		s += format(IDRFUForEMVCo, c.RFUForEMVCo)
+	}
+	if c.UnreservedTemplates != "" {
+		s += format(IDUnreservedTemplates, c.UnreservedTemplates)
+	}
 	return s
 }
 
