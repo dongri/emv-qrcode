@@ -13,9 +13,9 @@ emvqr.MerchantName = "DONGRI"
 emvqr.MerchantCity = "TOKYO"
 
 additionalTemplate := new(emvco.AdditionalDataFieldTemplate)
-additionalTemplate.BillNumber = "JPU20181018123456123456"
-additionalTemplate.ReferenceLabel = "JPU20181018123456123456"
-additionalTemplate.TerminalLabel = "123456"
+additionalTemplate.BillNumber = "hoge"
+additionalTemplate.ReferenceLabel = "fuga"
+additionalTemplate.TerminalLabel = "piyo"
 
 emvqr.AdditionalDataFieldTemplate = *additionalTemplate
 
