@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/dongri/emvco-qrcode/emvco"
@@ -31,5 +30,5 @@ func main() {
 		log.Println(err.Error())
 		return
 	}
-	fmt.Println(qrcodeData)
+	log.Println(qrcodeData)
 }

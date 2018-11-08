@@ -24,5 +24,5 @@ if err != nil {
   log.Println(err.Error())
   return
 }
-fmt.Println(qrcodeData)
+log.Println(qrcodeData)
 ```
