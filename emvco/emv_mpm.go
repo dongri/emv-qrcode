@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/dongri/emvco-qrcode/crc16"
 )
@@ -223,9 +224,10 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 }
 
 func format(id, value string) string {
-	length := strconv.Itoa(len(value))
-	length = "00" + length
-	return id + length[len(length)-2:] + value
+	length := utf8.RuneCountInString(value)
+	lengthStr := strconv.Itoa(length)
+	lengthStr = "00" + lengthStr
+	return id + lengthStr[len(lengthStr)-2:] + value
 }
 
 func formatAmount(amount float64) string {
