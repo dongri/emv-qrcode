@@ -193,10 +193,6 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 		} // 50-99
 		s += format(IDAdditionalDataFieldTemplate, template)
 	}
-	table := crc16.MakeTable(crc16.CRC16_CCITT_FALSE)
-	crc := crc16.Checksum([]byte(s+IDCRC+"04"), table)
-	crcStr := formatCrc(crc)
-	s += format(IDCRC, crcStr)
 	if (MerchantInformationLanguageTemplate{}) != c.MerchantInformationLanguageTemplate {
 		t := c.MerchantInformationLanguageTemplate
 		template := ""
@@ -220,6 +216,10 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 	if c.UnreservedTemplates != "" {
 		s += format(IDUnreservedTemplates, c.UnreservedTemplates)
 	}
+	table := crc16.MakeTable(crc16.CRC16_CCITT_FALSE)
+	crc := crc16.Checksum([]byte(s+IDCRC+"04"), table)
+	crcStr := formatCrc(crc)
+	s += format(IDCRC, crcStr)
 	return s, nil
 }
 
