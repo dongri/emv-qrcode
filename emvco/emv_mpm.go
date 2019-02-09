@@ -25,10 +25,10 @@ const (
 	IDMerchantCity                        = "60" // (M) Merchant City
 	IDPostalCode                          = "61" // (O) Postal Code
 	IDAdditionalDataFieldTemplate         = "62" // (O) Additional Data Field Template
-	IDCRC                                 = "63" // (M) CRC
 	IDMerchantInformationLanguageTemplate = "64" // (O) Merchant Information— Language Template
 	IDRFUForEMVCo                         = "65" // (O) 65-79 RFU for EMVCo
 	IDUnreservedTemplates                 = "80" // (O) 80-99 Unreserved Templates
+	IDCRC                                 = "63" // (M) CRC
 )
 
 // Data Objects for Additional Data Field Template (ID "62")
@@ -238,4 +238,10 @@ func formatCrc(crcValue uint16) string {
 	crcValueString := strconv.FormatUint(uint64(crcValue), 16)
 	s := "0000" + strings.ToUpper(crcValueString)
 	return s[len(s)-4:]
+}
+
+// Decode ...
+func Decode(payload string) *EMVQR {
+	//payload
+	return new(EMVQR)
 }
