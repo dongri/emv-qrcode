@@ -38,6 +38,7 @@ func main() {
 	template := new(cpm.ApplicationTemplate)
 	template.DataApplicationDefinitionFileName = "A0000000555555"
 	template.DataTrack2EquivalentData = "1234567890123458D191220112345F"
+	template.DataApplicationLabel = "HOGEHOGE"
 
 	qr.ApplicationTemplate = *template
 	qrcode, err := qr.GeneratePayload()
