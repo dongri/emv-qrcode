@@ -47,7 +47,7 @@ type EMVQR struct {
 // ApplicationTemplate ...
 type ApplicationTemplate struct {
 	BERTLV
-	// ApplicationSpecificTransparentTemplate ApplicationSpecificTransparentTemplate // 63
+	ApplicationSpecificTransparentTemplates []ApplicationSpecificTransparentTemplate // 63
 }
 
 // CommonDataTemplate ...
@@ -98,13 +98,13 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 		for _, t := range c.ApplicationTemplates {
 			template := ""
 			if t.DataApplicationDefinitionFileName != "" {
-				template += format(TagApplicationDefinitionFileName, toBinary(t.DataApplicationDefinitionFileName))
+				template += format(TagApplicationDefinitionFileName, t.DataApplicationDefinitionFileName)
 			}
 			if t.DataApplicationLabel != "" {
 				template += format(TagApplicationLabel, toHex(t.DataApplicationLabel))
 			}
 			if t.DataTrack2EquivalentData != "" {
-				template += format(TagTrack2EquivalentData, toBinary(t.DataTrack2EquivalentData))
+				template += format(TagTrack2EquivalentData, t.DataTrack2EquivalentData)
 			}
 			if t.DataApplicationPAN != "" {
 				template += format(TagApplicationPAN, t.DataApplicationPAN)
@@ -119,28 +119,28 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 				template += format(TagIssuerURL, toHex(t.DataIssuerURL))
 			}
 			if t.DataApplicationVersionNumber != "" {
-				template += format(TagApplicationVersionNumber, toBinary(t.DataApplicationVersionNumber))
+				template += format(TagApplicationVersionNumber, t.DataApplicationVersionNumber)
 			}
 			if t.DataIssuerApplicationData != "" {
-				template += format(TagIssuerApplicationData, toBinary(t.DataIssuerApplicationData))
+				template += format(TagIssuerApplicationData, t.DataIssuerApplicationData)
 			}
 			if t.DataTokenRequestorID != "" {
-				template += format(TagTokenRequestorID, toBinary(t.DataTokenRequestorID))
+				template += format(TagTokenRequestorID, t.DataTokenRequestorID)
 			}
 			if t.DataPaymentAccountReference != "" {
-				template += format(TagPaymentAccountReference, toBinary(t.DataPaymentAccountReference))
+				template += format(TagPaymentAccountReference, t.DataPaymentAccountReference)
 			}
 			if t.DataLast4DigitsOfPAN != "" {
-				template += format(TagLast4DigitsOfPAN, toBinary(t.DataLast4DigitsOfPAN))
+				template += format(TagLast4DigitsOfPAN, t.DataLast4DigitsOfPAN)
 			}
 			if t.DataApplicationCryptogram != "" {
-				template += format(TagApplicationCryptogram, toBinary(t.DataApplicationCryptogram))
+				template += format(TagApplicationCryptogram, t.DataApplicationCryptogram)
 			}
 			if t.DataApplicationTransactionCounter != "" {
-				template += format(TagApplicationTransactionCounter, toBinary(t.DataApplicationTransactionCounter))
+				template += format(TagApplicationTransactionCounter, t.DataApplicationTransactionCounter)
 			}
 			if t.DataUnpredictableNumber != "" {
-				template += format(TagUnpredictableNumber, toBinary(t.DataUnpredictableNumber))
+				template += format(TagUnpredictableNumber, t.DataUnpredictableNumber)
 			}
 			s += format(IDApplicationTemplate, template)
 		}
@@ -150,13 +150,13 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 		for _, t := range c.CommonDataTemplates {
 			template := ""
 			if t.DataApplicationDefinitionFileName != "" {
-				template += format(TagApplicationDefinitionFileName, toBinary(t.DataApplicationDefinitionFileName))
+				template += format(TagApplicationDefinitionFileName, t.DataApplicationDefinitionFileName)
 			}
 			if t.DataApplicationLabel != "" {
 				template += format(TagApplicationLabel, toHex(t.DataApplicationLabel))
 			}
 			if t.DataTrack2EquivalentData != "" {
-				template += format(TagTrack2EquivalentData, toBinary(t.DataTrack2EquivalentData))
+				template += format(TagTrack2EquivalentData, t.DataTrack2EquivalentData)
 			}
 			if t.DataApplicationPAN != "" {
 				template += format(TagApplicationPAN, t.DataApplicationPAN)
@@ -171,41 +171,41 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 				template += format(TagIssuerURL, toHex(t.DataIssuerURL))
 			}
 			if t.DataApplicationVersionNumber != "" {
-				template += format(TagApplicationVersionNumber, toBinary(t.DataApplicationVersionNumber))
+				template += format(TagApplicationVersionNumber, t.DataApplicationVersionNumber)
 			}
 			if t.DataIssuerApplicationData != "" {
-				template += format(TagIssuerApplicationData, toBinary(t.DataIssuerApplicationData))
+				template += format(TagIssuerApplicationData, t.DataIssuerApplicationData)
 			}
 			if t.DataTokenRequestorID != "" {
-				template += format(TagTokenRequestorID, toBinary(t.DataTokenRequestorID))
+				template += format(TagTokenRequestorID, t.DataTokenRequestorID)
 			}
 			if t.DataPaymentAccountReference != "" {
-				template += format(TagPaymentAccountReference, toBinary(t.DataPaymentAccountReference))
+				template += format(TagPaymentAccountReference, t.DataPaymentAccountReference)
 			}
 			if t.DataLast4DigitsOfPAN != "" {
-				template += format(TagLast4DigitsOfPAN, toBinary(t.DataLast4DigitsOfPAN))
+				template += format(TagLast4DigitsOfPAN, t.DataLast4DigitsOfPAN)
 			}
 			if t.DataApplicationCryptogram != "" {
-				template += format(TagApplicationCryptogram, toBinary(t.DataApplicationCryptogram))
+				template += format(TagApplicationCryptogram, t.DataApplicationCryptogram)
 			}
 			if t.DataApplicationTransactionCounter != "" {
-				template += format(TagApplicationTransactionCounter, toBinary(t.DataApplicationTransactionCounter))
+				template += format(TagApplicationTransactionCounter, t.DataApplicationTransactionCounter)
 			}
 			if t.DataUnpredictableNumber != "" {
-				template += format(TagUnpredictableNumber, toBinary(t.DataUnpredictableNumber))
+				template += format(TagUnpredictableNumber, t.DataUnpredictableNumber)
 			}
 
 			if len(t.CommonDataTransparentTemplates) > 0 {
 				for _, tt := range t.CommonDataTransparentTemplates {
 					ttemplate := ""
 					if tt.DataApplicationDefinitionFileName != "" {
-						ttemplate += format(TagApplicationDefinitionFileName, toBinary(tt.DataApplicationDefinitionFileName))
+						ttemplate += format(TagApplicationDefinitionFileName, tt.DataApplicationDefinitionFileName)
 					}
 					if tt.DataApplicationLabel != "" {
 						ttemplate += format(TagApplicationLabel, toHex(tt.DataApplicationLabel))
 					}
 					if tt.DataTrack2EquivalentData != "" {
-						ttemplate += format(TagTrack2EquivalentData, toBinary(tt.DataTrack2EquivalentData))
+						ttemplate += format(TagTrack2EquivalentData, tt.DataTrack2EquivalentData)
 					}
 					if tt.DataApplicationPAN != "" {
 						ttemplate += format(TagApplicationPAN, tt.DataApplicationPAN)
@@ -220,35 +220,34 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 						ttemplate += format(TagIssuerURL, toHex(tt.DataIssuerURL))
 					}
 					if tt.DataApplicationVersionNumber != "" {
-						ttemplate += format(TagApplicationVersionNumber, toBinary(tt.DataApplicationVersionNumber))
+						ttemplate += format(TagApplicationVersionNumber, tt.DataApplicationVersionNumber)
 					}
 					if tt.DataIssuerApplicationData != "" {
-						ttemplate += format(TagIssuerApplicationData, toBinary(tt.DataIssuerApplicationData))
+						ttemplate += format(TagIssuerApplicationData, tt.DataIssuerApplicationData)
 					}
 					if tt.DataTokenRequestorID != "" {
-						ttemplate += format(TagTokenRequestorID, toBinary(tt.DataTokenRequestorID))
+						ttemplate += format(TagTokenRequestorID, tt.DataTokenRequestorID)
 					}
 					if tt.DataPaymentAccountReference != "" {
-						ttemplate += format(TagPaymentAccountReference, toBinary(tt.DataPaymentAccountReference))
+						ttemplate += format(TagPaymentAccountReference, tt.DataPaymentAccountReference)
 					}
 					if tt.DataLast4DigitsOfPAN != "" {
-						ttemplate += format(TagLast4DigitsOfPAN, toBinary(tt.DataLast4DigitsOfPAN))
+						ttemplate += format(TagLast4DigitsOfPAN, tt.DataLast4DigitsOfPAN)
 					}
 					if tt.DataApplicationCryptogram != "" {
-						ttemplate += format(TagApplicationCryptogram, toBinary(tt.DataApplicationCryptogram))
+						ttemplate += format(TagApplicationCryptogram, tt.DataApplicationCryptogram)
 					}
 					if tt.DataApplicationTransactionCounter != "" {
-						ttemplate += format(TagApplicationTransactionCounter, toBinary(tt.DataApplicationTransactionCounter))
+						ttemplate += format(TagApplicationTransactionCounter, tt.DataApplicationTransactionCounter)
 					}
 					if tt.DataUnpredictableNumber != "" {
-						ttemplate += format(TagUnpredictableNumber, toBinary(tt.DataUnpredictableNumber))
+						ttemplate += format(TagUnpredictableNumber, tt.DataUnpredictableNumber)
 					}
 					template += format(IDCommonDataTransparentTemplate, ttemplate)
 				}
 				s += format(IDCommonDataTemplate, template)
 			}
 		}
-		fmt.Println(s)
 	}
 
 	decoded, err := hex.DecodeString(s)
@@ -266,23 +265,11 @@ func format(id, value string) string {
 	return id + lengthStr[len(lengthStr)-2:] + value
 }
 
-func formatStr(id, value string) string {
-	length := utf8.RuneCountInString(value)
-	lengthStr := strconv.Itoa(length)
-	lengthStr = "00" + lengthStr
-	return id + lengthStr[len(lengthStr)-2:] + value
-}
-
-func toBinary(s string) string {
-	return s
-}
-
 func toHex(s string) string {
 	src := []byte(s)
 	dst := make([]byte, hex.EncodedLen(len(src)))
 	hex.Encode(dst, src)
 	return string(dst)
-	// fmt.Printf("%s\n", dst)
 }
 
 func formatAmount(amount float64) string {

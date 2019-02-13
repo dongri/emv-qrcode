@@ -1,37 +1,40 @@
 package main
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/dongri/emvco-qrcode/emvco/cpm"
+	"github.com/dongri/emvco-qrcode/emvco/mpm"
 )
 
 func main() {
-	// emvqr := new(emvco.EMVQR)
-	// emvqr.PayloadFormatIndicator = "01"
-	// emvqr.PointOfInitiationMethod = "12" // 11 is static qrcode
-	// emvqr.MerchantAccountInformation = "ABCDEF1234567890"
-	// emvqr.MerchantCategoryCode = "5311"
-	// emvqr.TransactionCurrency = "392"
-	// emvqr.TransactionAmount = 999
-	// emvqr.CountryCode = "JP"
-	// emvqr.MerchantName = "DONGRI"
-	// emvqr.MerchantCity = "TOKYO"
+	// MPM
+	emvqr := new(mpm.EMVQR)
+	emvqr.PayloadFormatIndicator = "01"
+	emvqr.PointOfInitiationMethod = "12" // 11 is static qrcode
+	emvqr.MerchantAccountInformation = "ABCDEF1234567890"
+	emvqr.MerchantCategoryCode = "5311"
+	emvqr.TransactionCurrency = "392"
+	emvqr.TransactionAmount = 999
+	emvqr.CountryCode = "JP"
+	emvqr.MerchantName = "DONGRI"
+	emvqr.MerchantCity = "TOKYO"
 
-	// additionalTemplate := new(emvco.AdditionalDataFieldTemplate)
-	// additionalTemplate.BillNumber = "hoge"
-	// additionalTemplate.ReferenceLabel = "fuga"
-	// additionalTemplate.TerminalLabel = "piyo"
+	additionalTemplate := new(mpm.AdditionalDataFieldTemplate)
+	additionalTemplate.BillNumber = "hoge"
+	additionalTemplate.ReferenceLabel = "fuga"
+	additionalTemplate.TerminalLabel = "piyo"
 
-	// emvqr.AdditionalDataFieldTemplate = *additionalTemplate
+	emvqr.AdditionalDataFieldTemplate = *additionalTemplate
 
-	// qrcodeData, err := emvqr.GeneratePayload()
-	// if err != nil {
-	// 	log.Println(err.Error())
-	// 	return
-	// }
-	// log.Println(qrcodeData)
+	qrcodeData, err := emvqr.GeneratePayload()
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	log.Println(qrcodeData)
 
+	// CPM
 	qr := new(cpm.EMVQR)
 	qr.DataPayloadFormatIndicator = "CPV01"
 
@@ -60,8 +63,11 @@ func main() {
 	qr.CommonDataTemplates = append(qr.CommonDataTemplates, *template1)
 
 	qrcode, err := qr.GeneratePayload()
-
-	fmt.Println(err)
-	fmt.Println(qrcode)
-
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(qrcode)
+	if qrcode != "hQVDUFYwMWETTwegAAAAVVVVUAhQcm9kdWN0MWETTwegAAAAZmZmUAhQcm9kdWN0MmJJWggSNFZ4kBI0WF8gDkNBUkRIT0xERVIvRU1WXy0IcnVlc2RlZW5kIZ8QBwYBCgMAAACfJghYT9OF+iNLzJ82AgABnzcEbVjvEw==" {
+		log.Println("Diff")
+	}
 }
