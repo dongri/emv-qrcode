@@ -1,4 +1,7 @@
-# emvco-qrcode
+# EMVco QR code
+
+### Documents
+https://github.com/dongri/emvco-qrcode-doc
 
 ### MPM (Merchant Presented Mode)
 ```go
