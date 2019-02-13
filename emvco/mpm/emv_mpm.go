@@ -1,4 +1,4 @@
-package emvco
+package mpm
 
 import (
 	"fmt"
@@ -115,7 +115,7 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 	} else {
 		return "", fmt.Errorf("MerchantAccountInformation is mandatory")
 	}
-	if c.MerchantCategoryCode != "" && len(c.MerchantCategoryCode) != 4 {
+	if c.MerchantCategoryCode != "" && len(c.MerchantCategoryCode) == 4 {
 		s += format(IDMerchantCategoryCode, c.MerchantCategoryCode)
 	} else {
 		return "", fmt.Errorf("MerchantCategoryCode is mandatory")
