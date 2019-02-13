@@ -41,7 +41,7 @@ package main
 import(
   "log"
 
-  "github.com/dongri/emvco-qrcode/emvco/mpm"
+  "github.com/dongri/emvco-qrcode/emvco/cpm"
 )
 func main() {
   qr := new(cpm.EMVQR)
