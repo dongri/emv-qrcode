@@ -5,12 +5,12 @@
 package main
 
 import(
-  "log"
+	"log"
 
-  "github.com/dongri/emvco-qrcode/emvco/mpm"
+	"github.com/dongri/emvco-qrcode/emvco/mpm"
 )
 func main() {
-  emvqr := new(mpm.EMVQR)
+	emvqr := new(mpm.EMVQR)
 	emvqr.PayloadFormatIndicator = "01"
 	emvqr.PointOfInitiationMethod = "12" // 11 is static qrcode
 	emvqr.MerchantAccountInformation = "ABCDEF1234567890"
@@ -39,12 +39,12 @@ func main() {
 package main
 
 import(
-  "log"
+	"log"
 
-  "github.com/dongri/emvco-qrcode/emvco/cpm"
+	"github.com/dongri/emvco-qrcode/emvco/cpm"
 )
 func main() {
-  qr := new(cpm.EMVQR)
+	qr := new(cpm.EMVQR)
 	qr.DataPayloadFormatIndicator = "CPV01"
 
 	appTemplate1 := new(cpm.ApplicationTemplate)
