@@ -13,7 +13,6 @@ import (
 const (
 	IDPayloadFormatIndicator              = "00" // (M) Payload Format Indicator
 	IDPointOfInitiationMethod             = "01" // (O) Point of Initiation Method
-	IDMerchantAccountInformation          = "15" // (M) 02-51 Merchant Account Information (At least one Merchant Account Information data object shall be present.)
 	IDMerchantCategoryCode                = "52" // (M) Merchant Category Code
 	IDTransactionCurrency                 = "53" // (M) Transaction Currency
 	IDTransactionAmount                   = "54" // (C) Transaction Amount
@@ -58,7 +57,7 @@ const (
 type EMVQR struct {
 	PayloadFormatIndicator              string
 	PointOfInitiationMethod             string
-	MerchantAccountInformation          string
+	MerchantAccountInformation          MerchantAccountInformation // (M) Tag: 02-51 Merchant Account Information (At least one Merchant Account Information data object shall be present.)
 	MerchantCategoryCode                string
 	TransactionCurrency                 string
 	TransactionAmount                   float64
@@ -74,6 +73,12 @@ type EMVQR struct {
 	MerchantInformationLanguageTemplate MerchantInformationLanguageTemplate
 	RFUForEMVCo                         string
 	UnreservedTemplates                 string
+}
+
+// MerchantAccountInformation ...
+type MerchantAccountInformation struct {
+	Tag   string
+	Value string
 }
 
 // AdditionalDataFieldTemplate ...
@@ -110,8 +115,8 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 	if c.PointOfInitiationMethod != "" {
 		s += format(IDPointOfInitiationMethod, c.PointOfInitiationMethod)
 	}
-	if c.MerchantAccountInformation != "" {
-		s += format(IDMerchantAccountInformation, c.MerchantAccountInformation)
+	if (MerchantAccountInformation{}) != c.MerchantAccountInformation {
+		s += format(c.MerchantAccountInformation.Tag, c.MerchantAccountInformation.Value)
 	} else {
 		return "", fmt.Errorf("MerchantAccountInformation is mandatory")
 	}
