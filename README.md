@@ -16,7 +16,10 @@ func main() {
 	emvqr := new(mpm.EMVQR)
 	emvqr.PayloadFormatIndicator = "01"
 	emvqr.PointOfInitiationMethod = "12" // 11 is static qrcode
-	emvqr.MerchantAccountInformation = "ABCDEF1234567890"
+	merchantAccountInformation := new(mpm.MerchantAccountInformation)
+	merchantAccountInformation.Tag = "15"
+	merchantAccountInformation.Value = "ABCDEF1234567890"
+	emvqr.MerchantAccountInformation = *merchantAccountInformation
 	emvqr.MerchantCategoryCode = "5311"
 	emvqr.TransactionCurrency = "392"
 	emvqr.TransactionAmount = 999
