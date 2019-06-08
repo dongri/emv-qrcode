@@ -68,11 +68,11 @@ type EMVQR struct {
 	MerchantName                        string
 	MerchantCity                        string
 	PostalCode                          string
-	AdditionalDataFieldTemplate         AdditionalDataFieldTemplate
-	CRC                                 string
-	MerchantInformationLanguageTemplate MerchantInformationLanguageTemplate
-	RFUForEMVCo                         string
-	UnreservedTemplates                 string
+	AdditionalDataFieldTemplate         AdditionalDataFieldTemplate         // Tag: 62
+	CRC                                 string                              // Tag: 63
+	MerchantInformationLanguageTemplate MerchantInformationLanguageTemplate // Tag: 64
+	RFUForEMVCo                         string                              // Tag: 65-79 RFU for EMVCo
+	UnreservedTemplates                 string                              // Tag: 80-99 Unreserved Templates
 }
 
 // MerchantAccountInformation ...
@@ -249,4 +249,157 @@ func formatCrc(crcValue uint16) string {
 func Decode(payload string) *EMVQR {
 	//payload
 	return new(EMVQR)
+}
+
+// ParsePayload ...
+func ParsePayload(emvString string) (*EMVQR, error) {
+	var err error
+	var emvData = map[string]string{}
+	emvQR := new(EMVQR)
+	inputText := emvString
+	for len(inputText) > 0 {
+		data, remainingText, err := readNext(inputText)
+		if err != nil {
+			return nil, err
+		}
+		emvData[data["id"]] = data["value"]
+		id, err := strconv.Atoi(data["id"])
+		if err != nil {
+			return nil, err
+		}
+		if id >= 2 && id <= 51 {
+			emvQR.MerchantAccountInformation = ParseMerchantAccountInformation(data)
+		}
+		if id == 62 {
+			emvQR.AdditionalDataFieldTemplate, err = ParseAdditionalDataFieldTemplate(data)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if id == 64 {
+			emvQR.MerchantInformationLanguageTemplate, err = ParseMerchantInformationLanguageTemplate(data)
+			if err != nil {
+				return nil, err
+			}
+		}
+		inputText = remainingText
+	}
+
+	emvQR.PayloadFormatIndicator = emvData[IDPayloadFormatIndicator]
+	emvQR.PointOfInitiationMethod = emvData[IDPointOfInitiationMethod]
+	emvQR.MerchantCategoryCode = emvData[IDMerchantCategoryCode]
+	emvQR.TransactionCurrency = emvData[IDTransactionCurrency]
+	emvQR.TransactionAmount, err = strconv.ParseFloat(emvData[IDTransactionAmount], 64)
+	if err != nil {
+		return nil, err
+	}
+	emvQR.TipOrConvenienceIndicator = emvData[IDTipOrConvenienceIndicator]
+	emvQR.ValueOfConvenienceFeeFixed = emvData[IDValueOfConvenienceFeeFixed]
+	emvQR.ValueOfConvenienceFeePercentage = emvData[IDValueOfConvenienceFeePercentage]
+	emvQR.CountryCode = emvData[IDCountryCode]
+	emvQR.MerchantName = emvData[IDMerchantName]
+	emvQR.MerchantCity = emvData[IDMerchantCity]
+	emvQR.PostalCode = emvData[IDPostalCode]
+	emvQR.CRC = emvData[IDCRC]
+	emvQR.RFUForEMVCo = emvData[IDRFUForEMVCo]
+	emvQR.UnreservedTemplates = emvData[IDUnreservedTemplates]
+	return emvQR, nil
+}
+
+// ParseMerchantAccountInformation ...
+func ParseMerchantAccountInformation(data map[string]string) MerchantAccountInformation {
+	merchantAccountInformation := new(MerchantAccountInformation)
+	merchantAccountInformation.Tag = data["id"]
+	merchantAccountInformation.Value = data["value"]
+	return *merchantAccountInformation
+}
+
+// ParseAdditionalDataFieldTemplate ...
+func ParseAdditionalDataFieldTemplate(data map[string]string) (AdditionalDataFieldTemplate, error) {
+	inputText := data["value"]
+	additionalDataFieldTemplate := new(AdditionalDataFieldTemplate)
+	for len(inputText) > 0 {
+		data, remainingText, err := readNext(inputText)
+		if err != nil {
+			return *additionalDataFieldTemplate, err
+		}
+		value := data["value"]
+		switch data["id"] {
+		case AdditionalIDBillNumber:
+			additionalDataFieldTemplate.BillNumber = value
+		case AdditionalIDMobileNumber:
+			additionalDataFieldTemplate.MobileNumber = value
+		case AdditionalIDStoreLabel:
+			additionalDataFieldTemplate.StoreLabel = value
+		case AdditionalIDLoyaltyNumber:
+			additionalDataFieldTemplate.LoyaltyNumber = value
+		case AdditionalIDReferenceLabel:
+			additionalDataFieldTemplate.ReferenceLabel = value
+		case AdditionalIDCustomerLabel:
+			additionalDataFieldTemplate.CustomerLabel = value
+		case AdditionalIDTerminalLabel:
+			additionalDataFieldTemplate.TerminalLabel = value
+		case AdditionalIDPurposeTransaction:
+			additionalDataFieldTemplate.PurposeTransaction = value
+		case AdditionalIDAdditionalConsumerDataRequest:
+			additionalDataFieldTemplate.AdditionalConsumerDataRequest = value
+		case AdditionalIDRFUforEMVCo:
+			additionalDataFieldTemplate.RFUforEMVCo = value
+		case AdditionalIDPaymentSystemSpecificTemplates:
+			additionalDataFieldTemplate.PaymentSystemSpecificTemplates = value
+		}
+		inputText = remainingText
+	}
+	return *additionalDataFieldTemplate, nil
+}
+
+// ParseMerchantInformationLanguageTemplate ...
+func ParseMerchantInformationLanguageTemplate(data map[string]string) (MerchantInformationLanguageTemplate, error) {
+	inputText := data["value"]
+	merchantInformationLanguageTemplate := new(MerchantInformationLanguageTemplate)
+	for len(inputText) > 0 {
+		data, remainingText, err := readNext(inputText)
+		if err != nil {
+			return *merchantInformationLanguageTemplate, err
+		}
+		value := data["value"]
+		switch data["id"] {
+		case MerchantInformationIDLanguagePreference:
+			merchantInformationLanguageTemplate.LanguagePreference = value
+		case MerchantInformationIDMerchantName:
+			merchantInformationLanguageTemplate.MerchantName = value
+		case MerchantInformationIDMerchantCity:
+			merchantInformationLanguageTemplate.MerchantCity = value
+		case MerchantInformationIDRFUforEMVCo:
+			merchantInformationLanguageTemplate.RFUforEMVCo = value
+		}
+		inputText = remainingText
+	}
+	return *merchantInformationLanguageTemplate, nil
+}
+
+func readNext(inputText string) (map[string]string, string, error) {
+	id := substring(inputText, 0, 2)
+	length, err := strconv.Atoi(substring(inputText, 2, 2))
+	if err != nil {
+		return nil, "", err
+	}
+	value := substring(inputText, 4, length)
+	data := map[string]string{
+		"id":    id,
+		"value": value,
+	}
+	remainingText := substring(inputText, length+4, len(inputText)-4)
+	return data, remainingText, nil
+}
+
+func substring(str string, start, length int) string {
+	if start < 0 || length <= 0 {
+		return str
+	}
+	r := []rune(str)
+	if start+length > len(r) {
+		return string(r[start:])
+	}
+	return string(r[start : start+length])
 }
