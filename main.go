@@ -8,7 +8,8 @@ import (
 )
 
 func main() {
-	// MPM
+
+	// MPM Generate
 	emvqr := new(mpm.EMVQR)
 	emvqr.PayloadFormatIndicator = "01"
 	emvqr.PointOfInitiationMethod = "12" // 11 is static qrcode
