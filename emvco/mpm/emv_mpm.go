@@ -293,9 +293,11 @@ func ParsePayload(emvString string) (*EMVQR, error) {
 	emvQR.PointOfInitiationMethod = emvData[IDPointOfInitiationMethod]
 	emvQR.MerchantCategoryCode = emvData[IDMerchantCategoryCode]
 	emvQR.TransactionCurrency = emvData[IDTransactionCurrency]
-	emvQR.TransactionAmount, err = strconv.ParseFloat(emvData[IDTransactionAmount], 64)
-	if err != nil {
-		return nil, err
+	if _, ok := emvData[IDTransactionAmount]; ok {
+		emvQR.TransactionAmount, err = strconv.ParseFloat(emvData[IDTransactionAmount], 64)
+		if err != nil {
+			return nil, err
+		}
 	}
 	emvQR.TipOrConvenienceIndicator = emvData[IDTipOrConvenienceIndicator]
 	emvQR.ValueOfConvenienceFeeFixed = emvData[IDValueOfConvenienceFeeFixed]
