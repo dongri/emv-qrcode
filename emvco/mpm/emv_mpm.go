@@ -57,7 +57,7 @@ const (
 type EMVQR struct {
 	PayloadFormatIndicator              string
 	PointOfInitiationMethod             string
-	MerchantAccountInformation          MerchantAccountInformation // (M) Tag: 02-51 Merchant Account Information (At least one Merchant Account Information data object shall be present.)
+	MerchantAccountInformation          []MerchantAccountInformation // (M) Tag: 02-51 Merchant Account Information (At least one Merchant Account Information data object shall be present.)
 	MerchantCategoryCode                string
 	TransactionCurrency                 string
 	TransactionAmount                   float64
@@ -115,8 +115,10 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 	if c.PointOfInitiationMethod != "" {
 		s += format(IDPointOfInitiationMethod, c.PointOfInitiationMethod)
 	}
-	if (MerchantAccountInformation{}) != c.MerchantAccountInformation {
-		s += format(c.MerchantAccountInformation.Tag, c.MerchantAccountInformation.Value)
+	if len(c.MerchantAccountInformation) > 0 {
+		for _, t := range c.MerchantAccountInformation {
+			s += format(t.Tag, t.Value)
+		}
 	} else {
 		return "", fmt.Errorf("MerchantAccountInformation is mandatory")
 	}
@@ -255,6 +257,7 @@ func Decode(payload string) *EMVQR {
 func ParsePayload(emvString string) (*EMVQR, error) {
 	var err error
 	var emvData = map[string]string{}
+	var merchantAccountInformations []MerchantAccountInformation
 	emvQR := new(EMVQR)
 	inputText := emvString
 	for len(inputText) > 0 {
@@ -268,7 +271,7 @@ func ParsePayload(emvString string) (*EMVQR, error) {
 			return nil, err
 		}
 		if id >= 2 && id <= 51 {
-			emvQR.MerchantAccountInformation = ParseMerchantAccountInformation(data)
+			merchantAccountInformations = append(merchantAccountInformations, ParseMerchantAccountInformation(data))
 		}
 		if id == 62 {
 			emvQR.AdditionalDataFieldTemplate, err = ParseAdditionalDataFieldTemplate(data)
@@ -284,6 +287,7 @@ func ParsePayload(emvString string) (*EMVQR, error) {
 		}
 		inputText = remainingText
 	}
+	emvQR.MerchantAccountInformation = merchantAccountInformations
 
 	emvQR.PayloadFormatIndicator = emvData[IDPayloadFormatIndicator]
 	emvQR.PointOfInitiationMethod = emvData[IDPointOfInitiationMethod]
