@@ -238,7 +238,7 @@ func format(id, value string) string {
 }
 
 func formatAmount(amount float64) string {
-	return fmt.Sprintf("%.0f", amount)
+	return strconv.FormatFloat(amount, 'f', 2, 64)
 }
 
 func formatCrc(crcValue uint16) string {
