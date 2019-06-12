@@ -1,0 +1,29 @@
+version: 2
+jobs:
+
+  build1.10:
+    docker:
+      - image: circleci/golang:1.10
+    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+    steps:
+      - checkout
+      - run: go get -v -t -d ./...
+      - run: go test -v ./...
+
+  build1.11:
+    docker:
+      - image: circleci/golang:1.11
+    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+    steps:
+      - checkout
+      - run: go get -v -t -d ./...
+      - run: go test -v ./...
+
+  build1.12:
+    docker:
+      - image: circleci/golang:1.12
+    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+    steps:
+      - checkout
+      - run: go get -v -t -d ./...
+      - run: go test -v ./...
