@@ -1,5 +1,5 @@
 version: 2
-workflows;
+workflows:
   version: 2
   test:
     jobs:
