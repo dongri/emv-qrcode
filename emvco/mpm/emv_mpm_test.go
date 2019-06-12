@@ -292,3 +292,156 @@ func TestParseMerchantAccountInformation(t *testing.T) {
 		})
 	}
 }
+
+func TestParseAdditionalDataFieldTemplate(t *testing.T) {
+	type args struct {
+		data map[string]string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    AdditionalDataFieldTemplate
+		wantErr bool
+	}{
+		{
+			name: "bill number",
+			args: args{
+				data: map[string]string{
+					"id":    "62",
+					"value": "01041234",
+				},
+			},
+			want: AdditionalDataFieldTemplate{
+				BillNumber: "1234",
+			},
+			wantErr: false,
+		},
+		{
+			name: "mobile number",
+			args: args{
+				data: map[string]string{
+					"id":    "62",
+					"value": "021109012345678",
+				},
+			},
+			want: AdditionalDataFieldTemplate{
+				MobileNumber: "09012345678",
+			},
+			wantErr: false,
+		},
+		{
+			name: "store label",
+			args: args{
+				data: map[string]string{
+					"id":    "62",
+					"value": "03041234",
+				},
+			},
+			want: AdditionalDataFieldTemplate{
+				StoreLabel: "1234",
+			},
+			wantErr: false,
+		},
+		{
+			name: "loyalty number",
+			args: args{
+				data: map[string]string{
+					"id":    "62",
+					"value": "0403***",
+				},
+			},
+			want: AdditionalDataFieldTemplate{
+				LoyaltyNumber: "***",
+			},
+			wantErr: false,
+		},
+		{
+			name: "reference label",
+			args: args{
+				data: map[string]string{
+					"id":    "62",
+					"value": "0503***",
+				},
+			},
+			want: AdditionalDataFieldTemplate{
+				ReferenceLabel: "***",
+			},
+			wantErr: false,
+		},
+		{
+			name: "customer label",
+			args: args{
+				data: map[string]string{
+					"id":    "62",
+					"value": "0603***",
+				},
+			},
+			want: AdditionalDataFieldTemplate{
+				CustomerLabel: "***",
+			},
+			wantErr: false,
+		},
+		{
+			name: "terminal label",
+			args: args{
+				data: map[string]string{
+					"id":    "62",
+					"value": "0708A6008667",
+				},
+			},
+			want: AdditionalDataFieldTemplate{
+				TerminalLabel: "A6008667",
+			},
+			wantErr: false,
+		},
+		{
+			name: "purpose label",
+			args: args{
+				data: map[string]string{
+					"id":    "62",
+					"value": "0803***",
+				},
+			},
+			want: AdditionalDataFieldTemplate{
+				PurposeTransaction: "***",
+			},
+			wantErr: false,
+		},
+		{
+			name: "additional consumer data request",
+			args: args{
+				data: map[string]string{
+					"id":    "62",
+					"value": "0902ME",
+				},
+			},
+			want: AdditionalDataFieldTemplate{
+				AdditionalConsumerDataRequest: "ME",
+			},
+			wantErr: false,
+		},
+		{
+			name: "failed readNext",
+			args: args{
+				data: map[string]string{
+					"id":    "62",
+					"value": "00aa",
+				},
+			},
+			want:    AdditionalDataFieldTemplate{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseAdditionalDataFieldTemplate(tt.args.data)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ParseAdditionalDataFieldTemplate() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ParseAdditionalDataFieldTemplate() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
