@@ -260,3 +260,35 @@ func TestParsePayload(t *testing.T) {
 		})
 	}
 }
+
+func TestParseMerchantAccountInformation(t *testing.T) {
+	type args struct {
+		data map[string]string
+	}
+	tests := []struct {
+		name string
+		args args
+		want MerchantAccountInformation
+	}{
+		{
+			name: "ok",
+			args: args{
+				data: map[string]string{
+					"id":    "26",
+					"value": "1234",
+				},
+			},
+			want: MerchantAccountInformation{
+				Tag:   "26",
+				Value: "1234",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ParseMerchantAccountInformation(tt.args.data); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ParseMerchantAccountInformation() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
