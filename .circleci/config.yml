@@ -8,7 +8,6 @@ workflows:
       - test-1.12
 
 _test-body: &test-body
-  working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
   steps:
     - checkout
     - run: go get -v -t -d ./...
