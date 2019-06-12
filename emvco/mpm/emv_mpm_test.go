@@ -445,3 +445,65 @@ func TestParseAdditionalDataFieldTemplate(t *testing.T) {
 		})
 	}
 }
+
+func Test_readNext(t *testing.T) {
+	type args struct {
+		inputText string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    map[string]string
+		want1   string
+		wantErr bool
+	}{
+		{
+			name: "not remain inputText",
+			args: args{
+				inputText: "0002ab",
+			},
+			want: map[string]string{
+				"id":    "00",
+				"value": "ab",
+			},
+			want1:   "",
+			wantErr: false,
+		},
+		{
+			name: "remain inputText",
+			args: args{
+				inputText: "0002ab0102cd",
+			},
+			want: map[string]string{
+				"id":    "00",
+				"value": "ab",
+			},
+			want1:   "0102cd",
+			wantErr: false,
+		},
+		{
+			name: "length is not number",
+			args: args{
+				inputText: "00aa",
+			},
+			want:    nil,
+			want1:   "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1, err := readNext(tt.args.inputText)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("readNext() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("readNext() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("readNext() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
