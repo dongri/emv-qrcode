@@ -507,3 +507,60 @@ func Test_readNext(t *testing.T) {
 		})
 	}
 }
+
+func Test_substring(t *testing.T) {
+	type args struct {
+		str    string
+		start  int
+		length int
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "ok",
+			args: args{
+				str:    "0102ab",
+				start:  0,
+				length: 2,
+			},
+			want: "01",
+		},
+		{
+			name: "start is a negative",
+			args: args{
+				str:    "abc",
+				start:  -1,
+				length: 0,
+			},
+			want: "abc",
+		},
+		{
+			name: "length is zero",
+			args: args{
+				str:    "abc",
+				start:  0,
+				length: 0,
+			},
+			want: "abc",
+		},
+		{
+			name: "over length of str",
+			args: args{
+				str:    "abc",
+				start:  0,
+				length: 5,
+			},
+			want: "abc",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := substring(tt.args.str, tt.args.start, tt.args.length); got != tt.want {
+				t.Errorf("substring() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
