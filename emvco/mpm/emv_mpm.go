@@ -395,7 +395,11 @@ func readNext(inputText string) (map[string]string, string, error) {
 		"id":    id,
 		"value": value,
 	}
-	remainingText := substring(inputText, length+4, len(inputText)-4)
+	substringLength := len(inputText) - 4
+	var remainingText string
+	if substringLength > 0 {
+		remainingText = substring(inputText, length+4, substringLength)
+	}
 	return data, remainingText, nil
 }
 
