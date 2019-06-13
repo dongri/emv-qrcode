@@ -11,54 +11,60 @@ import (
 
 // const ....
 const (
-	IDPayloadFormatIndicator              = 0  // (M) Payload Format Indicator
-	IDPointOfInitiationMethod             = 1  // (O) Point of Initiation Method
-	IDMerchantAccountInformation          = 2  // (M) Tag: 02-51 Merchant Account Information (At least one Merchant Account Information data object shall be present.)
-	IDMerchantCategoryCode                = 52 // (M) Merchant Category Code
-	IDTransactionCurrency                 = 53 // (M) Transaction Currency
-	IDTransactionAmount                   = 54 // (C) Transaction Amount
-	IDTipOrConvenienceIndicator           = 55 // (O) Tip or Convenience Indicator
-	IDValueOfConvenienceFeeFixed          = 56 // (C) Value of Convenience Fee Fixed
-	IDValueOfConvenienceFeePercentage     = 57 // (C) Value of Convenience Fee Percentage
-	IDCountryCode                         = 58 // (M) Country Code
-	IDMerchantName                        = 59 // (M) Merchant Name
-	IDMerchantCity                        = 60 // (M) Merchant City
-	IDPostalCode                          = 61 // (O) Postal Code
-	IDAdditionalDataFieldTemplate         = 62 // (O) Additional Data Field Template
-	IDMerchantInformationLanguageTemplate = 64 // (O) Merchant Information— Language Template
-	IDRFUForEMVCo                         = 65 // (O) 65-79 RFU for EMVCo
-	IDUnreservedTemplates                 = 80 // (O) 80-99 Unreserved Templates
-	IDCRC                                 = 63 // (M) CRC
+	IDPayloadFormatIndicator               = 0  // (M) Payload Format Indicator
+	IDPointOfInitiationMethod              = 1  // (O) Point of Initiation Method
+	IDMerchantAccountInformationRangeStart = 2  // (M) Merchant Account Information
+	IDMerchantAccountInformationRangeEnd   = 51 // (M) Merchant Account Information
+	IDMerchantCategoryCode                 = 52 // (M) Merchant Category Code
+	IDTransactionCurrency                  = 53 // (M) Transaction Currency
+	IDTransactionAmount                    = 54 // (C) Transaction Amount
+	IDTipOrConvenienceIndicator            = 55 // (O) Tip or Convenience Indicator
+	IDValueOfConvenienceFeeFixed           = 56 // (C) Value of Convenience Fee Fixed
+	IDValueOfConvenienceFeePercentage      = 57 // (C) Value of Convenience Fee Percentage
+	IDCountryCode                          = 58 // (M) Country Code
+	IDMerchantName                         = 59 // (M) Merchant Name
+	IDMerchantCity                         = 60 // (M) Merchant City
+	IDPostalCode                           = 61 // (O) Postal Code
+	IDAdditionalDataFieldTemplate          = 62 // (O) Additional Data Field Template
+	IDMerchantInformationLanguageTemplate  = 64 // (O) Merchant Information— Language Template
+	IDRFUForEMVCoRangeStart                = 65 // (O) RFU for EMVCo
+	IDRFUForEMVCoRangeEnd                  = 79 // (O) RFU for EMVCo
+	IDUnreservedTemplatesRangeStart        = 80 // (O) Unreserved Templates
+	IDUnreservedTemplatesRangeEnd          = 99 // (O) Unreserved Templates
+	IDCRC                                  = 63 // (M) CRC
 )
 
 // Data Objects for Additional Data Field Template (ID "62")
 const (
-	AdditionalIDBillNumber                     = 1
-	AdditionalIDMobileNumber                   = 2
-	AdditionalIDStoreLabel                     = 3
-	AdditionalIDLoyaltyNumber                  = 4
-	AdditionalIDReferenceLabel                 = 5
-	AdditionalIDCustomerLabel                  = 6
-	AdditionalIDTerminalLabel                  = 7
-	AdditionalIDPurposeTransaction             = 8
-	AdditionalIDAdditionalConsumerDataRequest  = 9
-	AdditionalIDRFUforEMVCo                    = 10 // 10-49
-	AdditionalIDPaymentSystemSpecificTemplates = 50 // 50-99
+	AdditionalIDBillNumber                               = 1
+	AdditionalIDMobileNumber                             = 2
+	AdditionalIDStoreLabel                               = 3
+	AdditionalIDLoyaltyNumber                            = 4
+	AdditionalIDReferenceLabel                           = 5
+	AdditionalIDCustomerLabel                            = 6
+	AdditionalIDTerminalLabel                            = 7
+	AdditionalIDPurposeTransaction                       = 8
+	AdditionalIDAdditionalConsumerDataRequest            = 9
+	AdditionalIDRFUforEMVCoRangeStart                    = 10
+	AdditionalIDRFUforEMVCoRangeEnd                      = 49
+	AdditionalIDPaymentSystemSpecificTemplatesRangeStart = 50
+	AdditionalIDPaymentSystemSpecificTemplatesRangeEnd   = 99
 )
 
 // Data Objects for Merchant Information—Language Template (ID "64")
 const (
-	MerchantInformationIDLanguagePreference = 0
-	MerchantInformationIDMerchantName       = 1
-	MerchantInformationIDMerchantCity       = 2
-	MerchantInformationIDRFUforEMVCo        = 3 // 03-99
+	MerchantInformationIDLanguagePreference    = 0
+	MerchantInformationIDMerchantName          = 1
+	MerchantInformationIDMerchantCity          = 2
+	MerchantInformationIDRFUforEMVCoRangeStart = 3
+	MerchantInformationIDRFUforEMVCoRangeEnd   = 99
 )
 
 // EMVQR ...
 type EMVQR struct {
 	PayloadFormatIndicator              string
 	PointOfInitiationMethod             string
-	MerchantAccountInformationTemplates []MerchantAccountInformationTemplate // (M) Tag: 02-51 Merchant Account Information (At least one Merchant Account Information data object shall be present.)
+	MerchantAccountInformationTemplates []*MerchantAccountInformationTemplate // (M) Merchant Account Information
 	MerchantCategoryCode                string
 	TransactionCurrency                 string
 	TransactionAmount                   string
@@ -69,11 +75,11 @@ type EMVQR struct {
 	MerchantName                        string
 	MerchantCity                        string
 	PostalCode                          string
-	AdditionalDataFieldTemplate         *AdditionalDataFieldTemplate        // Tag: 62
-	CRC                                 string                              // Tag: 63
-	MerchantInformationLanguageTemplate MerchantInformationLanguageTemplate // Tag: 64
-	RFUForEMVCoTemplates                []RFUForEMVCoTemplate               // Tag: 65-79 RFU for EMVCo
-	UnreservedTemplates                 []UnreservedTemplate                // Tag: 80-99 Unreserved Templates
+	AdditionalDataFieldTemplate         *AdditionalDataFieldTemplate         // Tag: 62
+	CRC                                 string                               // Tag: 63
+	MerchantInformationLanguageTemplate *MerchantInformationLanguageTemplate // Tag: 64
+	RFUForEMVCoTemplates                []*RFUForEMVCoTemplate               // Tag: 65-79 RFU for EMVCo
+	UnreservedTemplates                 []*UnreservedTemplate                // Tag: 80-99 Unreserved Templates
 }
 
 // MerchantAccountInformationTemplate ...
@@ -93,8 +99,8 @@ type AdditionalDataFieldTemplate struct {
 	TerminalLabel                  string
 	PurposeTransaction             string
 	AdditionalConsumerDataRequest  string
-	RFUForEMVCoTemplates           []AdditionalRFUForEMVCoTemplate           // 10-49
-	PaymentSystemSpecificTemplates []AdditionalPaymentSystemSpecificTemplate // 50-99
+	RFUForEMVCoTemplates           []*AdditionalRFUForEMVCoTemplate
+	PaymentSystemSpecificTemplates []*AdditionalPaymentSystemSpecificTemplate
 }
 
 // AdditionalRFUForEMVCoTemplate ...
@@ -123,10 +129,16 @@ type UnreservedTemplate struct {
 
 // MerchantInformationLanguageTemplate ...
 type MerchantInformationLanguageTemplate struct {
-	LanguagePreference string
-	MerchantName       string
-	MerchantCity       string
-	RFUForEMVCo        string // 03-99
+	LanguagePreference   string
+	MerchantName         string
+	MerchantCity         string
+	RFUForEMVCoTemplates []*MerchantInformationRFUForEMVCoTemplate
+}
+
+// RFUforEMVCo ...
+type MerchantInformationRFUForEMVCoTemplate struct {
+	ID    int64
+	Value string
 }
 
 // GeneratePayload ...
@@ -229,7 +241,7 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 		} // 50-99
 		s += format(IDAdditionalDataFieldTemplate, template)
 	}
-	if (MerchantInformationLanguageTemplate{}) != c.MerchantInformationLanguageTemplate {
+	if c.MerchantInformationLanguageTemplate != nil {
 		t := c.MerchantInformationLanguageTemplate
 		template := ""
 		if t.LanguagePreference != "" {
@@ -241,9 +253,11 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 		if t.MerchantCity != "" {
 			template += format(MerchantInformationIDMerchantCity, t.MerchantCity)
 		}
-		if t.RFUForEMVCo != "" {
-			template += format(MerchantInformationIDRFUforEMVCo, t.RFUForEMVCo)
-		} // 03-99
+		if len(t.RFUForEMVCoTemplates) > 0 {
+			for _, t := range t.RFUForEMVCoTemplates {
+				template += format(t.ID, t.Value)
+			}
+		}
 		s += format(IDMerchantInformationLanguageTemplate, template)
 	}
 	if len(c.RFUForEMVCoTemplates) > 0 {
@@ -317,40 +331,40 @@ func ParsePayload(payload string) (*EMVQR, error) {
 		case IDCRC:
 			emvQR.CRC = p.Value()
 		}
-		if id >= 2 && id <= 51 {
+		if id >= IDMerchantAccountInformationRangeStart && id <= IDMerchantAccountInformationRangeEnd {
 			merchantAccountInformationTemplate, err := parseMerchantAccountInformationTemplate(id, p.Value())
 			if err != nil {
 				return nil, err
 			}
 			emvQR.MerchantAccountInformationTemplates = append(emvQR.MerchantAccountInformationTemplates, merchantAccountInformationTemplate)
 		}
-		if id == 62 {
+		if id == IDAdditionalDataFieldTemplate {
 			additionalDataFieldTemplate, err := parseAdditionalDataFieldTemplate(p.Value())
 			if err != nil {
 				return nil, err
 			}
 			emvQR.AdditionalDataFieldTemplate = additionalDataFieldTemplate
 		}
-		if id == 64 {
+		if id == IDMerchantInformationLanguageTemplate {
 			merchantInformationLanguageTemplate, err := parseMerchantInformationLanguageTemplate(p.Value())
 			if err != nil {
 				return nil, err
 			}
-			emvQR.MerchantInformationLanguageTemplate = *merchantInformationLanguageTemplate
+			emvQR.MerchantInformationLanguageTemplate = merchantInformationLanguageTemplate
 		}
-		if id >= 65 && id <= 79 {
+		if id >= IDRFUForEMVCoRangeStart && id <= IDRFUForEMVCoRangeEnd {
 			rfuForEMVCoTemplate, err := parseRFUForEMVCoTemplate(id, p.Value())
 			if err != nil {
 				return nil, err
 			}
-			emvQR.RFUForEMVCoTemplates = append(emvQR.RFUForEMVCoTemplates, *rfuForEMVCoTemplate)
+			emvQR.RFUForEMVCoTemplates = append(emvQR.RFUForEMVCoTemplates, rfuForEMVCoTemplate)
 		}
-		if id >= 80 && id <= 99 {
+		if id >= IDUnreservedTemplatesRangeStart && id <= IDUnreservedTemplatesRangeEnd {
 			unreservedTemplate, err := parseUnreservedTemplate(id, p.Value())
 			if err != nil {
 				return nil, err
 			}
-			emvQR.UnreservedTemplates = append(emvQR.UnreservedTemplates, *unreservedTemplate)
+			emvQR.UnreservedTemplates = append(emvQR.UnreservedTemplates, unreservedTemplate)
 		}
 	}
 	if err := p.Err(); err != nil {
@@ -359,8 +373,8 @@ func ParsePayload(payload string) (*EMVQR, error) {
 	return emvQR, nil
 }
 
-func parseMerchantAccountInformationTemplate(id int64, value string) (MerchantAccountInformationTemplate, error) {
-	return MerchantAccountInformationTemplate{
+func parseMerchantAccountInformationTemplate(id int64, value string) (*MerchantAccountInformationTemplate, error) {
+	return &MerchantAccountInformationTemplate{
 		ID:    id,
 		Value: value,
 	}, nil

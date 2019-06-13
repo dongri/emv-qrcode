@@ -49,8 +49,8 @@ func TestParsePayload(t *testing.T) {
 				emvString: "02081234abcd",
 			},
 			want: &EMVQR{
-				MerchantAccountInformationTemplates: []MerchantAccountInformationTemplate{
-					MerchantAccountInformationTemplate{
+				MerchantAccountInformationTemplates: []*MerchantAccountInformationTemplate{
+					&MerchantAccountInformationTemplate{
 						ID:    2,
 						Value: "1234abcd",
 					},
@@ -64,12 +64,12 @@ func TestParsePayload(t *testing.T) {
 				emvString: "02081234abcd26085678efgh",
 			},
 			want: &EMVQR{
-				MerchantAccountInformationTemplates: []MerchantAccountInformationTemplate{
-					MerchantAccountInformationTemplate{
+				MerchantAccountInformationTemplates: []*MerchantAccountInformationTemplate{
+					&MerchantAccountInformationTemplate{
 						ID:    2,
 						Value: "1234abcd",
 					},
-					MerchantAccountInformationTemplate{
+					&MerchantAccountInformationTemplate{
 						ID:    26,
 						Value: "5678efgh",
 					},
@@ -198,7 +198,7 @@ func TestParsePayload(t *testing.T) {
 				emvString: "64200002ZH0104最佳运输0202北京",
 			},
 			want: &EMVQR{
-				MerchantInformationLanguageTemplate: MerchantInformationLanguageTemplate{
+				MerchantInformationLanguageTemplate: &MerchantInformationLanguageTemplate{
 					LanguagePreference: "ZH",
 					MerchantName:       "最佳运输",
 					MerchantCity:       "北京",
@@ -261,7 +261,7 @@ func Test_parseMerchantAccountInformation(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    MerchantAccountInformationTemplate
+		want    *MerchantAccountInformationTemplate
 		wantErr bool
 	}{
 		{
@@ -270,7 +270,7 @@ func Test_parseMerchantAccountInformation(t *testing.T) {
 				id:    26,
 				value: "1234",
 			},
-			want: MerchantAccountInformationTemplate{
+			want: &MerchantAccountInformationTemplate{
 				ID:    26,
 				Value: "1234",
 			},
