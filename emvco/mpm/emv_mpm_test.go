@@ -49,9 +49,9 @@ func TestParsePayload(t *testing.T) {
 				emvString: "02081234abcd",
 			},
 			want: &EMVQR{
-				MerchantAccountInformation: []MerchantAccountInformation{
-					MerchantAccountInformation{
-						Tag:   "02",
+				MerchantAccountInformationTemplates: []MerchantAccountInformationTemplate{
+					MerchantAccountInformationTemplate{
+						ID:    2,
 						Value: "1234abcd",
 					},
 				},
@@ -64,13 +64,13 @@ func TestParsePayload(t *testing.T) {
 				emvString: "02081234abcd26085678efgh",
 			},
 			want: &EMVQR{
-				MerchantAccountInformation: []MerchantAccountInformation{
-					MerchantAccountInformation{
-						Tag:   "02",
+				MerchantAccountInformationTemplates: []MerchantAccountInformationTemplate{
+					MerchantAccountInformationTemplate{
+						ID:    2,
 						Value: "1234abcd",
 					},
-					MerchantAccountInformation{
-						Tag:   "26",
+					MerchantAccountInformationTemplate{
+						ID:    26,
 						Value: "5678efgh",
 					},
 				},
@@ -183,7 +183,7 @@ func TestParsePayload(t *testing.T) {
 				emvString: "6233030412340603***0708A60086670902ME",
 			},
 			want: &EMVQR{
-				AdditionalDataFieldTemplate: AdditionalDataFieldTemplate{
+				AdditionalDataFieldTemplate: &AdditionalDataFieldTemplate{
 					StoreLabel:                    "1234",
 					CustomerLabel:                 "***",
 					TerminalLabel:                 "A6008667",
@@ -253,57 +253,60 @@ func TestParsePayload(t *testing.T) {
 	}
 }
 
-func TestParseMerchantAccountInformation(t *testing.T) {
+func Test_parseMerchantAccountInformation(t *testing.T) {
 	type args struct {
-		data map[string]string
+		id    int64
+		value string
 	}
 	tests := []struct {
-		name string
-		args args
-		want MerchantAccountInformation
+		name    string
+		args    args
+		want    MerchantAccountInformationTemplate
+		wantErr bool
 	}{
 		{
 			name: "ok",
 			args: args{
-				data: map[string]string{
-					"id":    "26",
-					"value": "1234",
-				},
+				id:    26,
+				value: "1234",
 			},
-			want: MerchantAccountInformation{
-				Tag:   "26",
+			want: MerchantAccountInformationTemplate{
+				ID:    26,
 				Value: "1234",
 			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ParseMerchantAccountInformation(tt.args.data); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ParseMerchantAccountInformation() = %v, want %v", got, tt.want)
+			got, err := parseMerchantAccountInformationTemplate(tt.args.id, tt.args.value)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("parseMerchantAccountInformation() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("parseMerchantAccountInformation() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestParseAdditionalDataFieldTemplate(t *testing.T) {
+func Test_parseAdditionalDataFieldTemplate(t *testing.T) {
 	type args struct {
-		data map[string]string
+		value string
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    AdditionalDataFieldTemplate
+		want    *AdditionalDataFieldTemplate
 		wantErr bool
 	}{
 		{
 			name: "bill number",
 			args: args{
-				data: map[string]string{
-					"id":    "62",
-					"value": "01041234",
-				},
+				value: "01041234",
 			},
-			want: AdditionalDataFieldTemplate{
+			want: &AdditionalDataFieldTemplate{
 				BillNumber: "1234",
 			},
 			wantErr: false,
@@ -311,12 +314,9 @@ func TestParseAdditionalDataFieldTemplate(t *testing.T) {
 		{
 			name: "mobile number",
 			args: args{
-				data: map[string]string{
-					"id":    "62",
-					"value": "021109012345678",
-				},
+				value: "021109012345678",
 			},
-			want: AdditionalDataFieldTemplate{
+			want: &AdditionalDataFieldTemplate{
 				MobileNumber: "09012345678",
 			},
 			wantErr: false,
@@ -324,12 +324,9 @@ func TestParseAdditionalDataFieldTemplate(t *testing.T) {
 		{
 			name: "store label",
 			args: args{
-				data: map[string]string{
-					"id":    "62",
-					"value": "03041234",
-				},
+				value: "03041234",
 			},
-			want: AdditionalDataFieldTemplate{
+			want: &AdditionalDataFieldTemplate{
 				StoreLabel: "1234",
 			},
 			wantErr: false,
@@ -337,12 +334,9 @@ func TestParseAdditionalDataFieldTemplate(t *testing.T) {
 		{
 			name: "loyalty number",
 			args: args{
-				data: map[string]string{
-					"id":    "62",
-					"value": "0403***",
-				},
+				value: "0403***",
 			},
-			want: AdditionalDataFieldTemplate{
+			want: &AdditionalDataFieldTemplate{
 				LoyaltyNumber: "***",
 			},
 			wantErr: false,
@@ -350,12 +344,9 @@ func TestParseAdditionalDataFieldTemplate(t *testing.T) {
 		{
 			name: "reference label",
 			args: args{
-				data: map[string]string{
-					"id":    "62",
-					"value": "0503***",
-				},
+				value: "0503***",
 			},
-			want: AdditionalDataFieldTemplate{
+			want: &AdditionalDataFieldTemplate{
 				ReferenceLabel: "***",
 			},
 			wantErr: false,
@@ -363,12 +354,9 @@ func TestParseAdditionalDataFieldTemplate(t *testing.T) {
 		{
 			name: "customer label",
 			args: args{
-				data: map[string]string{
-					"id":    "62",
-					"value": "0603***",
-				},
+				value: "0603***",
 			},
-			want: AdditionalDataFieldTemplate{
+			want: &AdditionalDataFieldTemplate{
 				CustomerLabel: "***",
 			},
 			wantErr: false,
@@ -376,12 +364,9 @@ func TestParseAdditionalDataFieldTemplate(t *testing.T) {
 		{
 			name: "terminal label",
 			args: args{
-				data: map[string]string{
-					"id":    "62",
-					"value": "0708A6008667",
-				},
+				value: "0708A6008667",
 			},
-			want: AdditionalDataFieldTemplate{
+			want: &AdditionalDataFieldTemplate{
 				TerminalLabel: "A6008667",
 			},
 			wantErr: false,
@@ -389,12 +374,9 @@ func TestParseAdditionalDataFieldTemplate(t *testing.T) {
 		{
 			name: "purpose label",
 			args: args{
-				data: map[string]string{
-					"id":    "62",
-					"value": "0803***",
-				},
+				value: "0803***",
 			},
-			want: AdditionalDataFieldTemplate{
+			want: &AdditionalDataFieldTemplate{
 				PurposeTransaction: "***",
 			},
 			wantErr: false,
@@ -402,12 +384,9 @@ func TestParseAdditionalDataFieldTemplate(t *testing.T) {
 		{
 			name: "additional consumer data request",
 			args: args{
-				data: map[string]string{
-					"id":    "62",
-					"value": "0902ME",
-				},
+				value: "0902ME",
 			},
-			want: AdditionalDataFieldTemplate{
+			want: &AdditionalDataFieldTemplate{
 				AdditionalConsumerDataRequest: "ME",
 			},
 			wantErr: false,
@@ -415,143 +394,21 @@ func TestParseAdditionalDataFieldTemplate(t *testing.T) {
 		{
 			name: "failed readNext",
 			args: args{
-				data: map[string]string{
-					"id":    "62",
-					"value": "00aa",
-				},
+				value: "00aa",
 			},
-			want:    AdditionalDataFieldTemplate{},
+			want:    nil,
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseAdditionalDataFieldTemplate(tt.args.data)
+			got, err := parseAdditionalDataFieldTemplate(tt.args.value)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ParseAdditionalDataFieldTemplate() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ParseAdditionalDataFieldTemplate() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_readNext(t *testing.T) {
-	type args struct {
-		inputText string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    map[string]string
-		want1   string
-		wantErr bool
-	}{
-		{
-			name: "not remain inputText",
-			args: args{
-				inputText: "0002ab",
-			},
-			want: map[string]string{
-				"id":    "00",
-				"value": "ab",
-			},
-			want1:   "",
-			wantErr: false,
-		},
-		{
-			name: "remain inputText",
-			args: args{
-				inputText: "0002ab0102cd",
-			},
-			want: map[string]string{
-				"id":    "00",
-				"value": "ab",
-			},
-			want1:   "0102cd",
-			wantErr: false,
-		},
-		{
-			name: "length is not number",
-			args: args{
-				inputText: "00aa",
-			},
-			want:    nil,
-			want1:   "",
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := readNext(tt.args.inputText)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("readNext() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("readNext() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("readNext() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
-func Test_substring(t *testing.T) {
-	type args struct {
-		str    string
-		start  int
-		length int
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "ok",
-			args: args{
-				str:    "0102ab",
-				start:  0,
-				length: 2,
-			},
-			want: "01",
-		},
-		{
-			name: "start is a negative",
-			args: args{
-				str:    "abc",
-				start:  -1,
-				length: 0,
-			},
-			want: "",
-		},
-		{
-			name: "length is zero",
-			args: args{
-				str:    "abc",
-				start:  0,
-				length: 0,
-			},
-			want: "",
-		},
-		{
-			name: "over length of str",
-			args: args{
-				str:    "abc",
-				start:  0,
-				length: 5,
-			},
-			want: "abc",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := substring(tt.args.str, tt.args.start, tt.args.length); got != tt.want {
-				t.Errorf("substring() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -13,16 +13,16 @@ func main() {
 	emvqr := new(mpm.EMVQR)
 	emvqr.PayloadFormatIndicator = "01"
 	emvqr.PointOfInitiationMethod = "12" // 11 is static qrcode
-	var merchantAccountInformations []mpm.MerchantAccountInformation
-	merchantAccountInformationMaster := new(mpm.MerchantAccountInformation)
-	merchantAccountInformationMaster.Tag = "04"
+	var merchantAccountInformations []mpm.MerchantAccountInformationTemplate
+	merchantAccountInformationMaster := new(mpm.MerchantAccountInformationTemplate)
+	merchantAccountInformationMaster.ID = 4
 	merchantAccountInformationMaster.Value = "MASTER1234567890"
 	merchantAccountInformations = append(merchantAccountInformations, *merchantAccountInformationMaster)
-	merchantAccountInformationJCB := new(mpm.MerchantAccountInformation)
-	merchantAccountInformationJCB.Tag = "13"
+	merchantAccountInformationJCB := new(mpm.MerchantAccountInformationTemplate)
+	merchantAccountInformationJCB.ID = 13
 	merchantAccountInformationJCB.Value = "JCB1234567890"
 	merchantAccountInformations = append(merchantAccountInformations, *merchantAccountInformationJCB)
-	emvqr.MerchantAccountInformation = merchantAccountInformations
+	emvqr.MerchantAccountInformationTemplates = merchantAccountInformations
 	emvqr.MerchantCategoryCode = "5311"
 	emvqr.TransactionCurrency = "392"
 	emvqr.TransactionAmount = "999.123"
@@ -33,7 +33,7 @@ func main() {
 	additionalTemplate.BillNumber = "hoge"
 	additionalTemplate.ReferenceLabel = "fuga"
 	additionalTemplate.TerminalLabel = "piyo"
-	emvqr.AdditionalDataFieldTemplate = *additionalTemplate
+	emvqr.AdditionalDataFieldTemplate = additionalTemplate
 	mpmQRCode, err := emvqr.GeneratePayload()
 	if err != nil {
 		log.Println(err.Error())
@@ -49,7 +49,7 @@ func main() {
 		return
 	}
 	log.Println(emvQR)
-	log.Println(emvQR.MerchantAccountInformation)
+	log.Println(emvQR.MerchantAccountInformationTemplates)
 
 	// CPM
 	qr := new(cpm.EMVQR)

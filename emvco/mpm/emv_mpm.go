@@ -11,53 +11,54 @@ import (
 
 // const ....
 const (
-	IDPayloadFormatIndicator              = "00" // (M) Payload Format Indicator
-	IDPointOfInitiationMethod             = "01" // (O) Point of Initiation Method
-	IDMerchantCategoryCode                = "52" // (M) Merchant Category Code
-	IDTransactionCurrency                 = "53" // (M) Transaction Currency
-	IDTransactionAmount                   = "54" // (C) Transaction Amount
-	IDTipOrConvenienceIndicator           = "55" // (O) Tip or Convenience Indicator
-	IDValueOfConvenienceFeeFixed          = "56" // (C) Value of Convenience Fee Fixed
-	IDValueOfConvenienceFeePercentage     = "57" // (C) Value of Convenience Fee Percentage
-	IDCountryCode                         = "58" // (M) Country Code
-	IDMerchantName                        = "59" // (M) Merchant Name
-	IDMerchantCity                        = "60" // (M) Merchant City
-	IDPostalCode                          = "61" // (O) Postal Code
-	IDAdditionalDataFieldTemplate         = "62" // (O) Additional Data Field Template
-	IDMerchantInformationLanguageTemplate = "64" // (O) Merchant Information— Language Template
-	IDRFUForEMVCo                         = "65" // (O) 65-79 RFU for EMVCo
-	IDUnreservedTemplates                 = "80" // (O) 80-99 Unreserved Templates
-	IDCRC                                 = "63" // (M) CRC
+	IDPayloadFormatIndicator              = 0  // (M) Payload Format Indicator
+	IDPointOfInitiationMethod             = 1  // (O) Point of Initiation Method
+	IDMerchantAccountInformation          = 2  // (M) Tag: 02-51 Merchant Account Information (At least one Merchant Account Information data object shall be present.)
+	IDMerchantCategoryCode                = 52 // (M) Merchant Category Code
+	IDTransactionCurrency                 = 53 // (M) Transaction Currency
+	IDTransactionAmount                   = 54 // (C) Transaction Amount
+	IDTipOrConvenienceIndicator           = 55 // (O) Tip or Convenience Indicator
+	IDValueOfConvenienceFeeFixed          = 56 // (C) Value of Convenience Fee Fixed
+	IDValueOfConvenienceFeePercentage     = 57 // (C) Value of Convenience Fee Percentage
+	IDCountryCode                         = 58 // (M) Country Code
+	IDMerchantName                        = 59 // (M) Merchant Name
+	IDMerchantCity                        = 60 // (M) Merchant City
+	IDPostalCode                          = 61 // (O) Postal Code
+	IDAdditionalDataFieldTemplate         = 62 // (O) Additional Data Field Template
+	IDMerchantInformationLanguageTemplate = 64 // (O) Merchant Information— Language Template
+	IDRFUForEMVCo                         = 65 // (O) 65-79 RFU for EMVCo
+	IDUnreservedTemplates                 = 80 // (O) 80-99 Unreserved Templates
+	IDCRC                                 = 63 // (M) CRC
 )
 
 // Data Objects for Additional Data Field Template (ID "62")
 const (
-	AdditionalIDBillNumber                     = "01"
-	AdditionalIDMobileNumber                   = "02"
-	AdditionalIDStoreLabel                     = "03"
-	AdditionalIDLoyaltyNumber                  = "04"
-	AdditionalIDReferenceLabel                 = "05"
-	AdditionalIDCustomerLabel                  = "06"
-	AdditionalIDTerminalLabel                  = "07"
-	AdditionalIDPurposeTransaction             = "08"
-	AdditionalIDAdditionalConsumerDataRequest  = "09"
-	AdditionalIDRFUforEMVCo                    = "10" // 10-49
-	AdditionalIDPaymentSystemSpecificTemplates = "50" // 50-99
+	AdditionalIDBillNumber                     = 1
+	AdditionalIDMobileNumber                   = 2
+	AdditionalIDStoreLabel                     = 3
+	AdditionalIDLoyaltyNumber                  = 4
+	AdditionalIDReferenceLabel                 = 5
+	AdditionalIDCustomerLabel                  = 6
+	AdditionalIDTerminalLabel                  = 7
+	AdditionalIDPurposeTransaction             = 8
+	AdditionalIDAdditionalConsumerDataRequest  = 9
+	AdditionalIDRFUforEMVCo                    = 10 // 10-49
+	AdditionalIDPaymentSystemSpecificTemplates = 50 // 50-99
 )
 
 // Data Objects for Merchant Information—Language Template (ID "64")
 const (
-	MerchantInformationIDLanguagePreference = "00"
-	MerchantInformationIDMerchantName       = "01"
-	MerchantInformationIDMerchantCity       = "02"
-	MerchantInformationIDRFUforEMVCo        = "03" // 03-99
+	MerchantInformationIDLanguagePreference = 0
+	MerchantInformationIDMerchantName       = 1
+	MerchantInformationIDMerchantCity       = 2
+	MerchantInformationIDRFUforEMVCo        = 3 // 03-99
 )
 
 // EMVQR ...
 type EMVQR struct {
 	PayloadFormatIndicator              string
 	PointOfInitiationMethod             string
-	MerchantAccountInformation          []MerchantAccountInformation // (M) Tag: 02-51 Merchant Account Information (At least one Merchant Account Information data object shall be present.)
+	MerchantAccountInformationTemplates []MerchantAccountInformationTemplate // (M) Tag: 02-51 Merchant Account Information (At least one Merchant Account Information data object shall be present.)
 	MerchantCategoryCode                string
 	TransactionCurrency                 string
 	TransactionAmount                   string
@@ -68,16 +69,16 @@ type EMVQR struct {
 	MerchantName                        string
 	MerchantCity                        string
 	PostalCode                          string
-	AdditionalDataFieldTemplate         AdditionalDataFieldTemplate         // Tag: 62
+	AdditionalDataFieldTemplate         *AdditionalDataFieldTemplate        // Tag: 62
 	CRC                                 string                              // Tag: 63
 	MerchantInformationLanguageTemplate MerchantInformationLanguageTemplate // Tag: 64
-	RFUForEMVCo                         string                              // Tag: 65-79 RFU for EMVCo
-	UnreservedTemplates                 string                              // Tag: 80-99 Unreserved Templates
+	RFUForEMVCoTemplates                []RFUForEMVCoTemplate               // Tag: 65-79 RFU for EMVCo
+	UnreservedTemplates                 []UnreservedTemplate                // Tag: 80-99 Unreserved Templates
 }
 
-// MerchantAccountInformation ...
-type MerchantAccountInformation struct {
-	Tag   string
+// MerchantAccountInformationTemplate ...
+type MerchantAccountInformationTemplate struct {
+	ID    int64
 	Value string
 }
 
@@ -92,8 +93,32 @@ type AdditionalDataFieldTemplate struct {
 	TerminalLabel                  string
 	PurposeTransaction             string
 	AdditionalConsumerDataRequest  string
-	RFUforEMVCo                    string // 10-49
-	PaymentSystemSpecificTemplates string // 50-99
+	RFUForEMVCoTemplates           []AdditionalRFUForEMVCoTemplate           // 10-49
+	PaymentSystemSpecificTemplates []AdditionalPaymentSystemSpecificTemplate // 50-99
+}
+
+// AdditionalRFUForEMVCoTemplate ...
+type AdditionalRFUForEMVCoTemplate struct {
+	ID    int64
+	Value string
+}
+
+// AdditionalPaymentSystemSpecificTemplate ...
+type AdditionalPaymentSystemSpecificTemplate struct {
+	ID    int64
+	Value string
+}
+
+// RFUforEMVCo ...
+type RFUForEMVCoTemplate struct {
+	ID    int64
+	Value string
+}
+
+// UnreservedTemplate ...
+type UnreservedTemplate struct {
+	ID    int64
+	Value string
 }
 
 // MerchantInformationLanguageTemplate ...
@@ -101,7 +126,7 @@ type MerchantInformationLanguageTemplate struct {
 	LanguagePreference string
 	MerchantName       string
 	MerchantCity       string
-	RFUforEMVCo        string // 03-99
+	RFUForEMVCo        string // 03-99
 }
 
 // GeneratePayload ...
@@ -115,9 +140,9 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 	if c.PointOfInitiationMethod != "" {
 		s += format(IDPointOfInitiationMethod, c.PointOfInitiationMethod)
 	}
-	if len(c.MerchantAccountInformation) > 0 {
-		for _, t := range c.MerchantAccountInformation {
-			s += format(t.Tag, t.Value)
+	if len(c.MerchantAccountInformationTemplates) > 0 {
+		for _, t := range c.MerchantAccountInformationTemplates {
+			s += format(t.ID, t.Value)
 		}
 	} else {
 		return "", fmt.Errorf("MerchantAccountInformation is mandatory")
@@ -162,7 +187,7 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 	if c.PostalCode != "" {
 		s += format(IDPostalCode, c.PostalCode)
 	}
-	if (AdditionalDataFieldTemplate{}) != c.AdditionalDataFieldTemplate {
+	if c.AdditionalDataFieldTemplate != nil {
 		t := c.AdditionalDataFieldTemplate
 		template := ""
 		if t.BillNumber != "" {
@@ -192,11 +217,15 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 		if t.AdditionalConsumerDataRequest != "" {
 			template += format(AdditionalIDAdditionalConsumerDataRequest, t.AdditionalConsumerDataRequest)
 		}
-		if t.RFUforEMVCo != "" {
-			template += format(AdditionalIDRFUforEMVCo, t.RFUforEMVCo)
+		if len(t.RFUForEMVCoTemplates) > 0 {
+			for _, t := range t.RFUForEMVCoTemplates {
+				template += format(t.ID, t.Value)
+			}
 		} // 10-49
-		if t.PaymentSystemSpecificTemplates != "" {
-			template += format(AdditionalIDPaymentSystemSpecificTemplates, t.PaymentSystemSpecificTemplates)
+		if len(t.PaymentSystemSpecificTemplates) > 0 {
+			for _, t := range t.PaymentSystemSpecificTemplates {
+				template += format(t.ID, t.Value)
+			}
 		} // 50-99
 		s += format(IDAdditionalDataFieldTemplate, template)
 	}
@@ -212,33 +241,31 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 		if t.MerchantCity != "" {
 			template += format(MerchantInformationIDMerchantCity, t.MerchantCity)
 		}
-		if t.RFUforEMVCo != "" {
-			template += format(MerchantInformationIDRFUforEMVCo, t.RFUforEMVCo)
+		if t.RFUForEMVCo != "" {
+			template += format(MerchantInformationIDRFUforEMVCo, t.RFUForEMVCo)
 		} // 03-99
 		s += format(IDMerchantInformationLanguageTemplate, template)
 	}
-	if c.RFUForEMVCo != "" {
-		s += format(IDRFUForEMVCo, c.RFUForEMVCo)
+	if len(c.RFUForEMVCoTemplates) > 0 {
+		for _, t := range c.RFUForEMVCoTemplates {
+			s += format(t.ID, t.Value)
+		}
 	}
-	if c.UnreservedTemplates != "" {
-		s += format(IDUnreservedTemplates, c.UnreservedTemplates)
+	if len(c.UnreservedTemplates) > 0 {
+		for _, t := range c.UnreservedTemplates {
+			s += format(t.ID, t.Value)
+		}
 	}
 	table := crc16.MakeTable(crc16.CRC16_CCITT_FALSE)
-	crc := crc16.Checksum([]byte(s+IDCRC+"04"), table)
+	crc := crc16.Checksum([]byte(fmt.Sprintf("%s%02d04", s, IDCRC)), table)
 	crcStr := formatCrc(crc)
 	s += format(IDCRC, crcStr)
 	return s, nil
 }
 
-func format(id, value string) string {
-	length := utf8.RuneCountInString(value)
-	lengthStr := strconv.Itoa(length)
-	lengthStr = "00" + lengthStr
-	return id + lengthStr[len(lengthStr)-2:] + value
-}
-
-func formatAmount(amount float64) string {
-	return strconv.FormatFloat(amount, 'f', 2, 64)
+func format(id int64, value string) string {
+	valueLength := utf8.RuneCountInString(value)
+	return fmt.Sprintf("%02d%02d%s", id, valueLength, value)
 }
 
 func formatCrc(crcValue uint16) string {
@@ -254,166 +281,157 @@ func Decode(payload string) *EMVQR {
 }
 
 // ParsePayload ...
-func ParsePayload(emvString string) (*EMVQR, error) {
-	var emvData = map[string]string{}
-	var merchantAccountInformations []MerchantAccountInformation
+func ParsePayload(payload string) (*EMVQR, error) {
+	p, err := NewParser(payload)
+	if err != nil {
+		return nil, err
+	}
 	emvQR := new(EMVQR)
-	inputText := emvString
-	for len(inputText) > 0 {
-		data, remainingText, err := readNext(inputText)
-		if err != nil {
-			return nil, err
-		}
-		emvData[data["id"]] = data["value"]
-		id, err := strconv.Atoi(data["id"])
-		if err != nil {
-			return nil, err
+	for p.Next() {
+		id := p.ID()
+		switch id {
+		case IDPayloadFormatIndicator:
+			emvQR.PayloadFormatIndicator = p.Value()
+		case IDPointOfInitiationMethod:
+			emvQR.PointOfInitiationMethod = p.Value()
+		case IDMerchantCategoryCode:
+			emvQR.MerchantCategoryCode = p.Value()
+		case IDTransactionCurrency:
+			emvQR.TransactionCurrency = p.Value()
+		case IDTransactionAmount:
+			emvQR.TransactionAmount = p.Value()
+		case IDTipOrConvenienceIndicator:
+			emvQR.TipOrConvenienceIndicator = p.Value()
+		case IDValueOfConvenienceFeeFixed:
+			emvQR.ValueOfConvenienceFeeFixed = p.Value()
+		case IDValueOfConvenienceFeePercentage:
+			emvQR.ValueOfConvenienceFeePercentage = p.Value()
+		case IDCountryCode:
+			emvQR.CountryCode = p.Value()
+		case IDMerchantName:
+			emvQR.MerchantName = p.Value()
+		case IDMerchantCity:
+			emvQR.MerchantCity = p.Value()
+		case IDPostalCode:
+			emvQR.PostalCode = p.Value()
+		case IDCRC:
+			emvQR.CRC = p.Value()
 		}
 		if id >= 2 && id <= 51 {
-			merchantAccountInformations = append(merchantAccountInformations, ParseMerchantAccountInformation(data))
+			merchantAccountInformationTemplate, err := parseMerchantAccountInformationTemplate(id, p.Value())
+			if err != nil {
+				return nil, err
+			}
+			emvQR.MerchantAccountInformationTemplates = append(emvQR.MerchantAccountInformationTemplates, merchantAccountInformationTemplate)
 		}
 		if id == 62 {
-			emvQR.AdditionalDataFieldTemplate, err = ParseAdditionalDataFieldTemplate(data)
+			additionalDataFieldTemplate, err := parseAdditionalDataFieldTemplate(p.Value())
 			if err != nil {
 				return nil, err
 			}
+			emvQR.AdditionalDataFieldTemplate = additionalDataFieldTemplate
 		}
 		if id == 64 {
-			emvQR.MerchantInformationLanguageTemplate, err = ParseMerchantInformationLanguageTemplate(data)
+			merchantInformationLanguageTemplate, err := parseMerchantInformationLanguageTemplate(p.Value())
 			if err != nil {
 				return nil, err
 			}
+			emvQR.MerchantInformationLanguageTemplate = *merchantInformationLanguageTemplate
 		}
-		inputText = remainingText
+		if id >= 65 && id <= 79 {
+			rfuForEMVCoTemplate, err := parseRFUForEMVCoTemplate(id, p.Value())
+			if err != nil {
+				return nil, err
+			}
+			emvQR.RFUForEMVCoTemplates = append(emvQR.RFUForEMVCoTemplates, *rfuForEMVCoTemplate)
+		}
+		if id >= 80 && id <= 99 {
+			unreservedTemplate, err := parseUnreservedTemplate(id, p.Value())
+			if err != nil {
+				return nil, err
+			}
+			emvQR.UnreservedTemplates = append(emvQR.UnreservedTemplates, *unreservedTemplate)
+		}
 	}
-	emvQR.MerchantAccountInformation = merchantAccountInformations
-
-	emvQR.PayloadFormatIndicator = emvData[IDPayloadFormatIndicator]
-	emvQR.PointOfInitiationMethod = emvData[IDPointOfInitiationMethod]
-	emvQR.MerchantCategoryCode = emvData[IDMerchantCategoryCode]
-	emvQR.TransactionCurrency = emvData[IDTransactionCurrency]
-	if _, ok := emvData[IDTransactionAmount]; ok {
-		emvQR.TransactionAmount = emvData[IDTransactionAmount]
+	if err := p.Err(); err != nil {
+		return nil, err
 	}
-	emvQR.TipOrConvenienceIndicator = emvData[IDTipOrConvenienceIndicator]
-	emvQR.ValueOfConvenienceFeeFixed = emvData[IDValueOfConvenienceFeeFixed]
-	emvQR.ValueOfConvenienceFeePercentage = emvData[IDValueOfConvenienceFeePercentage]
-	emvQR.CountryCode = emvData[IDCountryCode]
-	emvQR.MerchantName = emvData[IDMerchantName]
-	emvQR.MerchantCity = emvData[IDMerchantCity]
-	emvQR.PostalCode = emvData[IDPostalCode]
-	emvQR.CRC = emvData[IDCRC]
-	emvQR.RFUForEMVCo = emvData[IDRFUForEMVCo]
-	emvQR.UnreservedTemplates = emvData[IDUnreservedTemplates]
 	return emvQR, nil
 }
 
-// ParseMerchantAccountInformation ...
-func ParseMerchantAccountInformation(data map[string]string) MerchantAccountInformation {
-	merchantAccountInformation := new(MerchantAccountInformation)
-	merchantAccountInformation.Tag = data["id"]
-	merchantAccountInformation.Value = data["value"]
-	return *merchantAccountInformation
+func parseMerchantAccountInformationTemplate(id int64, value string) (MerchantAccountInformationTemplate, error) {
+	return MerchantAccountInformationTemplate{
+		ID:    id,
+		Value: value,
+	}, nil
 }
 
-// ParseAdditionalDataFieldTemplate ...
-func ParseAdditionalDataFieldTemplate(data map[string]string) (AdditionalDataFieldTemplate, error) {
-	inputText := data["value"]
-	additionalDataFieldTemplate := new(AdditionalDataFieldTemplate)
-	for len(inputText) > 0 {
-		data, remainingText, err := readNext(inputText)
-		if err != nil {
-			return *additionalDataFieldTemplate, err
-		}
-		value := data["value"]
-		switch data["id"] {
-		case AdditionalIDBillNumber:
-			additionalDataFieldTemplate.BillNumber = value
-		case AdditionalIDMobileNumber:
-			additionalDataFieldTemplate.MobileNumber = value
-		case AdditionalIDStoreLabel:
-			additionalDataFieldTemplate.StoreLabel = value
-		case AdditionalIDLoyaltyNumber:
-			additionalDataFieldTemplate.LoyaltyNumber = value
-		case AdditionalIDReferenceLabel:
-			additionalDataFieldTemplate.ReferenceLabel = value
-		case AdditionalIDCustomerLabel:
-			additionalDataFieldTemplate.CustomerLabel = value
-		case AdditionalIDTerminalLabel:
-			additionalDataFieldTemplate.TerminalLabel = value
-		case AdditionalIDPurposeTransaction:
-			additionalDataFieldTemplate.PurposeTransaction = value
-		case AdditionalIDAdditionalConsumerDataRequest:
-			additionalDataFieldTemplate.AdditionalConsumerDataRequest = value
-		case AdditionalIDRFUforEMVCo:
-			additionalDataFieldTemplate.RFUforEMVCo = value
-		case AdditionalIDPaymentSystemSpecificTemplates:
-			additionalDataFieldTemplate.PaymentSystemSpecificTemplates = value
-		}
-		inputText = remainingText
-	}
-	return *additionalDataFieldTemplate, nil
-}
-
-// ParseMerchantInformationLanguageTemplate ...
-func ParseMerchantInformationLanguageTemplate(data map[string]string) (MerchantInformationLanguageTemplate, error) {
-	inputText := data["value"]
-	merchantInformationLanguageTemplate := new(MerchantInformationLanguageTemplate)
-	for len(inputText) > 0 {
-		data, remainingText, err := readNext(inputText)
-		if err != nil {
-			return *merchantInformationLanguageTemplate, err
-		}
-		value := data["value"]
-		switch data["id"] {
-		case MerchantInformationIDLanguagePreference:
-			merchantInformationLanguageTemplate.LanguagePreference = value
-		case MerchantInformationIDMerchantName:
-			merchantInformationLanguageTemplate.MerchantName = value
-		case MerchantInformationIDMerchantCity:
-			merchantInformationLanguageTemplate.MerchantCity = value
-		case MerchantInformationIDRFUforEMVCo:
-			merchantInformationLanguageTemplate.RFUforEMVCo = value
-		}
-		inputText = remainingText
-	}
-	return *merchantInformationLanguageTemplate, nil
-}
-
-func readNext(inputText string) (map[string]string, string, error) {
-	id := substring(inputText, 0, 2)
-	length, err := strconv.Atoi(substring(inputText, 2, 2))
+func parseAdditionalDataFieldTemplate(value string) (*AdditionalDataFieldTemplate, error) {
+	p, err := NewParser(value)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
-	value := substring(inputText, 4, length)
-	data := map[string]string{
-		"id":    id,
-		"value": value,
+	additionalDataFieldTemplate := new(AdditionalDataFieldTemplate)
+	for p.Next() {
+		switch p.ID() {
+		case AdditionalIDBillNumber:
+			additionalDataFieldTemplate.BillNumber = p.Value()
+		case AdditionalIDMobileNumber:
+			additionalDataFieldTemplate.MobileNumber = p.Value()
+		case AdditionalIDStoreLabel:
+			additionalDataFieldTemplate.StoreLabel = p.Value()
+		case AdditionalIDLoyaltyNumber:
+			additionalDataFieldTemplate.LoyaltyNumber = p.Value()
+		case AdditionalIDReferenceLabel:
+			additionalDataFieldTemplate.ReferenceLabel = p.Value()
+		case AdditionalIDCustomerLabel:
+			additionalDataFieldTemplate.CustomerLabel = p.Value()
+		case AdditionalIDTerminalLabel:
+			additionalDataFieldTemplate.TerminalLabel = p.Value()
+		case AdditionalIDPurposeTransaction:
+			additionalDataFieldTemplate.PurposeTransaction = p.Value()
+		case AdditionalIDAdditionalConsumerDataRequest:
+			additionalDataFieldTemplate.AdditionalConsumerDataRequest = p.Value()
+		}
 	}
-	substringLength := len(inputText) - 4
-	var remainingText string
-	if substringLength > 0 {
-		remainingText = substring(inputText, length+4, substringLength)
+	if err := p.Err(); err != nil {
+		return nil, err
 	}
-	return data, remainingText, nil
+	return additionalDataFieldTemplate, nil
 }
 
-func substring(str string, start, length int) string {
-	r := []rune(str)
-	l := len(r)
-	if start < 0 {
-		start = 0
+func parseMerchantInformationLanguageTemplate(value string) (*MerchantInformationLanguageTemplate, error) {
+	p, err := NewParser(value)
+	if err != nil {
+		return nil, err
 	}
-	if length < 0 {
-		length = 0
+	merchantInformationLanguageTemplate := new(MerchantInformationLanguageTemplate)
+	for p.Next() {
+		switch p.ID() {
+		case MerchantInformationIDLanguagePreference:
+			merchantInformationLanguageTemplate.LanguagePreference = p.Value()
+		case MerchantInformationIDMerchantName:
+			merchantInformationLanguageTemplate.MerchantName = p.Value()
+		case MerchantInformationIDMerchantCity:
+			merchantInformationLanguageTemplate.MerchantCity = p.Value()
+		}
 	}
-	if start >= l {
-		start = l
+	if err := p.Err(); err != nil {
+		return nil, err
 	}
-	end := start + length
-	if end > l {
-		end = l
-	}
-	return string(r[start:end])
+	return merchantInformationLanguageTemplate, nil
+}
+
+func parseRFUForEMVCoTemplate(id int64, value string) (*RFUForEMVCoTemplate, error) {
+	return &RFUForEMVCoTemplate{
+		ID:    id,
+		Value: value,
+	}, nil
+}
+
+func parseUnreservedTemplate(id int64, value string) (*UnreservedTemplate, error) {
+	return &UnreservedTemplate{
+		ID:    id,
+		Value: value,
+	}, nil
 }
