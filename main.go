@@ -25,7 +25,7 @@ func main() {
 	emvqr.MerchantAccountInformation = merchantAccountInformations
 	emvqr.MerchantCategoryCode = "5311"
 	emvqr.TransactionCurrency = "392"
-	emvqr.TransactionAmount = 999.123
+	emvqr.TransactionAmount = "999.123"
 	emvqr.CountryCode = "JP"
 	emvqr.MerchantName = "DONGRI"
 	emvqr.MerchantCity = "TOKYO"

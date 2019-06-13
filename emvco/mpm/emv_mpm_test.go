@@ -103,7 +103,7 @@ func TestParsePayload(t *testing.T) {
 				emvString: "540523.72",
 			},
 			want: &EMVQR{
-				TransactionAmount: 23.72,
+				TransactionAmount: "23.72",
 			},
 			wantErr: false,
 		},
@@ -234,14 +234,6 @@ func TestParsePayload(t *testing.T) {
 			name: "failed parse merchant information language template",
 			args: args{
 				emvString: "64100002JA01dd",
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "failed parse transaction amount",
-			args: args{
-				emvString: "5405abcde",
 			},
 			want:    nil,
 			wantErr: true,

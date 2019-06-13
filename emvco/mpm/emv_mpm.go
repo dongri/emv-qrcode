@@ -60,7 +60,7 @@ type EMVQR struct {
 	MerchantAccountInformation          []MerchantAccountInformation // (M) Tag: 02-51 Merchant Account Information (At least one Merchant Account Information data object shall be present.)
 	MerchantCategoryCode                string
 	TransactionCurrency                 string
-	TransactionAmount                   float64
+	TransactionAmount                   string
 	TipOrConvenienceIndicator           string
 	ValueOfConvenienceFeeFixed          string
 	ValueOfConvenienceFeePercentage     string
@@ -132,8 +132,8 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 	} else {
 		return "", fmt.Errorf("TransactionCurrency is mandatory")
 	}
-	if c.TransactionAmount > 0 {
-		s += format(IDTransactionAmount, formatAmount(c.TransactionAmount))
+	if c.TransactionAmount != "" {
+		s += format(IDTransactionAmount, c.TransactionAmount)
 	}
 	if c.TipOrConvenienceIndicator != "" {
 		s += format(IDTipOrConvenienceIndicator, c.TipOrConvenienceIndicator)
@@ -255,7 +255,6 @@ func Decode(payload string) *EMVQR {
 
 // ParsePayload ...
 func ParsePayload(emvString string) (*EMVQR, error) {
-	var err error
 	var emvData = map[string]string{}
 	var merchantAccountInformations []MerchantAccountInformation
 	emvQR := new(EMVQR)
@@ -294,10 +293,7 @@ func ParsePayload(emvString string) (*EMVQR, error) {
 	emvQR.MerchantCategoryCode = emvData[IDMerchantCategoryCode]
 	emvQR.TransactionCurrency = emvData[IDTransactionCurrency]
 	if _, ok := emvData[IDTransactionAmount]; ok {
-		emvQR.TransactionAmount, err = strconv.ParseFloat(emvData[IDTransactionAmount], 64)
-		if err != nil {
-			return nil, err
-		}
+		emvQR.TransactionAmount = emvData[IDTransactionAmount]
 	}
 	emvQR.TipOrConvenienceIndicator = emvData[IDTipOrConvenienceIndicator]
 	emvQR.ValueOfConvenienceFeeFixed = emvData[IDValueOfConvenienceFeeFixed]
