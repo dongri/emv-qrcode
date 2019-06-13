@@ -1,5 +1,7 @@
 # EMVco QR code
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/dongri/emvco-qrcode)](https://goreportcard.com/report/github.com/dongri/emvco-qrcode)
+
 ### Documents
 https://github.com/dongri/emvco-qrcode-doc
 
