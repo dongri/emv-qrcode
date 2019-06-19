@@ -400,12 +400,17 @@ func readNext(inputText string) (map[string]string, string, error) {
 }
 
 func substring(str string, start, length int) string {
-	if start < 0 || length <= 0 {
-		return str
-	}
 	r := []rune(str)
-	if start+length > len(r) {
-		return string(r[start:])
+	l := len(r)
+	if start < 0 {
+		start = 0
 	}
-	return string(r[start : start+length])
+	if start >= l {
+		start = l
+	}
+	end := start + length
+	if end > l {
+		end = l
+	}
+	return string(r[start:end])
 }
