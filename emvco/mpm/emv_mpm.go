@@ -405,6 +405,9 @@ func substring(str string, start, length int) string {
 	if start < 0 {
 		start = 0
 	}
+	if length < 0 {
+		length = 0
+	}
 	if start >= l {
 		start = l
 	}
