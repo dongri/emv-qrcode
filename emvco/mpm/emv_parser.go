@@ -7,44 +7,33 @@ import (
 	"unicode/utf8"
 )
 
-type Error struct {
+type ParserError struct {
 	Func string
 	Err  error
 }
 
-func (e *Error) Error() string {
+func (e *ParserError) Error() string {
 	return "parser." + e.Func + ": " + e.Err.Error()
 }
 
-func notCallError(fn string) *Error {
-	return &Error{
+func notCallError(fn string) *ParserError {
+	return &ParserError{
 		Func: fn,
 		Err:  errors.New("not call Next()"),
 	}
 }
 
-func outOfRangeError(fn string, current, max, start, end int64) *Error {
-	return &Error{
+func outOfRangeError(fn string, current, max, start, end int64) *ParserError {
+	return &ParserError{
 		Func: fn,
 		Err:  fmt.Errorf("bounds out of range. current: %d, max: %d, start: %d, end: %d", current, max, start, end),
 	}
 }
 
-type NumError struct {
-	Func string
-	Num  string
-	Err  error
-}
-
-func (e *NumError) Error() string {
-	return "parser." + e.Func + ": " + "parsing " + strconv.Quote(e.Num) + ": " + e.Err.Error()
-}
-
-func syntaxError(fn, str string) *NumError {
-	return &NumError{
+func syntaxError(fn, str string) *ParserError {
+	return &ParserError{
 		Func: fn,
-		Num:  str,
-		Err:  strconv.ErrSyntax,
+		Err:  errors.New("parsing " + strconv.Quote(str) + ": " + strconv.ErrSyntax.Error()),
 	}
 }
 

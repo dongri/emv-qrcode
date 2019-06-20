@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestError_Error(t *testing.T) {
+func TestParserError_Error(t *testing.T) {
 	type fields struct {
 		Func string
 		Err  error
@@ -28,47 +28,12 @@ func TestError_Error(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			e := &Error{
+			e := &ParserError{
 				Func: tt.fields.Func,
 				Err:  tt.fields.Err,
 			}
 			if got := e.Error(); got != tt.want {
-				t.Errorf("Error.Error() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestNumError_Error(t *testing.T) {
-	type fields struct {
-		Func string
-		Num  string
-		Err  error
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   string
-	}{
-		{
-			name: "ok",
-			fields: fields{
-				Func: "Sample",
-				Num:  "ab",
-				Err:  errors.New("sample error"),
-			},
-			want: "parser.Sample: parsing \"ab\": sample error",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			e := &NumError{
-				Func: tt.fields.Func,
-				Num:  tt.fields.Num,
-				Err:  tt.fields.Err,
-			}
-			if got := e.Error(); got != tt.want {
-				t.Errorf("NumError.Error() = %v, want %v", got, tt.want)
+				t.Errorf("ParserError.Error() = %v, want %v", got, tt.want)
 			}
 		})
 	}
