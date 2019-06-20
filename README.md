@@ -1,5 +1,7 @@
 # EMVco QR code
 
+[![CircleCI](https://circleci.com/gh/dongri/emvco-qrcode.svg?style=svg)](https://circleci.com/gh/dongri/emvco-qrcode)
+
 [![Go Report Card](https://goreportcard.com/badge/github.com/dongri/emvco-qrcode)](https://goreportcard.com/report/github.com/dongri/emvco-qrcode)
 
 ### Documents
