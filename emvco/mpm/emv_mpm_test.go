@@ -527,7 +527,7 @@ func Test_substring(t *testing.T) {
 				start:  -1,
 				length: 0,
 			},
-			want: "abc",
+			want: "",
 		},
 		{
 			name: "length is zero",
@@ -536,7 +536,7 @@ func Test_substring(t *testing.T) {
 				start:  0,
 				length: 0,
 			},
-			want: "abc",
+			want: "",
 		},
 		{
 			name: "over length of str",
