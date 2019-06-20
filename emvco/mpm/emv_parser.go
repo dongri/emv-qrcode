@@ -37,6 +37,13 @@ func syntaxError(fn, str string) *ParserError {
 	}
 }
 
+func idRangeError(fn string, id ID) *ParserError {
+	return &ParserError{
+		Func: fn,
+		Err:  errors.New("id range invalid. id: " + id.String()),
+	}
+}
+
 const (
 	IDWordCount          = 2
 	ValueLengthWordCount = 2
@@ -49,13 +56,13 @@ type Parser struct {
 	err     error
 }
 
-func NewParser(payload string) (*Parser, error) {
+func NewParser(payload string) *Parser {
 	return &Parser{
 		current: -1,
 		max:     int64(utf8.RuneCountInString(payload)),
 		source:  []rune(payload),
 		err:     nil,
-	}, nil
+	}
 }
 
 func (p *Parser) Next() bool {
@@ -77,24 +84,19 @@ func (p *Parser) Next() bool {
 	return true
 }
 
-func (p *Parser) ID() int64 {
+func (p *Parser) ID() ID {
 	const fnID = "ID"
 	start := p.current
 	end := start + IDWordCount
 	if p.current < 0 {
 		p.err = notCallError(fnID)
-		return -1
+		return ID("")
 	}
 	if p.max < end {
 		p.err = outOfRangeError(fnID, p.current, p.max, start, end)
-		return -1
+		return ID("")
 	}
-	strID := string(p.source[start:end])
-	id, err := strconv.ParseInt(strID, 10, 64)
-	if err != nil {
-		p.err = syntaxError(fnID, strID)
-		return -1
-	}
+	id := ID(string(p.source[start:end]))
 	return id
 }
 

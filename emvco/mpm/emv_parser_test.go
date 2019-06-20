@@ -44,10 +44,9 @@ func TestNewParser(t *testing.T) {
 		payload string
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    *Parser
-		wantErr bool
+		name string
+		args args
+		want *Parser
 	}{
 		{
 			name: "ok",
@@ -60,16 +59,11 @@ func TestNewParser(t *testing.T) {
 				source:  []rune("1234"),
 				err:     nil,
 			},
-			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewParser(tt.args.payload)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("NewParser() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			got := NewParser(tt.args.payload)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewParser() = %v, want %v", got, tt.want)
 			}
@@ -237,7 +231,7 @@ func TestParser_ID(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		want   int64
+		want   ID
 	}{
 		{
 			name: "ok",
@@ -247,7 +241,7 @@ func TestParser_ID(t *testing.T) {
 				source:  []rune("000201"),
 				err:     nil,
 			},
-			want: 0,
+			want: ID("00"),
 		},
 		{
 			name: "not called Next()",
@@ -257,7 +251,7 @@ func TestParser_ID(t *testing.T) {
 				source:  []rune("000201"),
 				err:     nil,
 			},
-			want: -1,
+			want: ID(""),
 		},
 		{
 			name: "slice bounds out of range",
@@ -267,7 +261,7 @@ func TestParser_ID(t *testing.T) {
 				source:  []rune(""),
 				err:     nil,
 			},
-			want: -1,
+			want: ID(""),
 		},
 	}
 	for _, tt := range tests {
