@@ -318,7 +318,7 @@ const (
 // MerchantAccountInformation ...
 type MerchantAccountInformationTemplate struct {
 	GloballyUniqueIdentifier string
-	PaymentNetworkSpecific   []*PaymentNetworkSpecific
+	PaymentNetworkSpecific   map[ID]*PaymentNetworkSpecific
 }
 
 func parseMerchantAccountInformationTemplate(payload string) (*MerchantAccountInformationTemplate, error) {
@@ -341,7 +341,10 @@ func parseMerchantAccountInformationTemplate(payload string) (*MerchantAccountIn
 				return nil, err
 			}
 			if within {
-				merchantAccountInformation.PaymentNetworkSpecific = append(merchantAccountInformation.PaymentNetworkSpecific, parsePaymentNetworkSpecific(id, value))
+				if merchantAccountInformation.PaymentNetworkSpecific == nil {
+					merchantAccountInformation.PaymentNetworkSpecific = make(map[ID]*PaymentNetworkSpecific)
+				}
+				merchantAccountInformation.PaymentNetworkSpecific[id] = parsePaymentNetworkSpecific(value)
 				continue
 			}
 		}
@@ -356,8 +359,8 @@ func (c MerchantAccountInformationTemplate) Stringify() string {
 	s := ""
 	s += format(MerchantAccountIDGloballyUniqueIdentifier, c.GloballyUniqueIdentifier)
 	if len(c.PaymentNetworkSpecific) > 0 {
-		for _, t := range c.PaymentNetworkSpecific {
-			s += t.Stringify()
+		for id, t := range c.PaymentNetworkSpecific {
+			s += format(id, t.Stringify())
 		}
 	}
 	return s
@@ -365,19 +368,17 @@ func (c MerchantAccountInformationTemplate) Stringify() string {
 
 // PaymentNetworkSpecific ...
 type PaymentNetworkSpecific struct {
-	ID    ID
 	Value string
 }
 
-func parsePaymentNetworkSpecific(id ID, value string) *PaymentNetworkSpecific {
+func parsePaymentNetworkSpecific(value string) *PaymentNetworkSpecific {
 	return &PaymentNetworkSpecific{
-		ID:    id,
 		Value: value,
 	}
 }
 
 func (c PaymentNetworkSpecific) Stringify() string {
-	return format(c.ID, c.Value)
+	return c.Value
 }
 
 // Data Objects for Additional Data Field Template (ID "62")

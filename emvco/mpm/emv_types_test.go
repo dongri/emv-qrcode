@@ -429,9 +429,8 @@ func Test_parseEMVQR(t *testing.T) {
 				MerchantAccountInformation: map[ID]*MerchantAccountInformationTemplate{
 					ID("02"): &MerchantAccountInformationTemplate{
 						GloballyUniqueIdentifier: "hoge",
-						PaymentNetworkSpecific: []*PaymentNetworkSpecific{
-							&PaymentNetworkSpecific{
-								ID:    ID("01"),
+						PaymentNetworkSpecific: map[ID]*PaymentNetworkSpecific{
+							ID("01"): &PaymentNetworkSpecific{
 								Value: "abcd",
 							},
 						},
@@ -457,18 +456,16 @@ func Test_parseEMVQR(t *testing.T) {
 				MerchantAccountInformation: map[ID]*MerchantAccountInformationTemplate{
 					ID("02"): &MerchantAccountInformationTemplate{
 						GloballyUniqueIdentifier: "hoge",
-						PaymentNetworkSpecific: []*PaymentNetworkSpecific{
-							&PaymentNetworkSpecific{
-								ID:    ID("01"),
+						PaymentNetworkSpecific: map[ID]*PaymentNetworkSpecific{
+							ID("01"): &PaymentNetworkSpecific{
 								Value: "abcd",
 							},
 						},
 					},
 					ID("26"): &MerchantAccountInformationTemplate{
 						GloballyUniqueIdentifier: "fuga",
-						PaymentNetworkSpecific: []*PaymentNetworkSpecific{
-							&PaymentNetworkSpecific{
-								ID:    ID("02"),
+						PaymentNetworkSpecific: map[ID]*PaymentNetworkSpecific{
+							ID("02"): &PaymentNetworkSpecific{
 								Value: "efgh",
 							},
 						},
@@ -714,9 +711,8 @@ func TestEMVQR_Stringify(t *testing.T) {
 				MerchantAccountInformation: map[ID]*MerchantAccountInformationTemplate{
 					ID("02"): &MerchantAccountInformationTemplate{
 						GloballyUniqueIdentifier: "hoge",
-						PaymentNetworkSpecific: []*PaymentNetworkSpecific{
-							&PaymentNetworkSpecific{
-								ID:    ID("01"),
+						PaymentNetworkSpecific: map[ID]*PaymentNetworkSpecific{
+							ID("01"): &PaymentNetworkSpecific{
 								Value: "abcd",
 							},
 						},
@@ -973,7 +969,6 @@ func Test_parseMerchantAccountInformationTemplate(t *testing.T) {
 
 func Test_parsePaymentNetworkSpecific(t *testing.T) {
 	type args struct {
-		id    ID
 		value string
 	}
 	tests := []struct {
@@ -983,18 +978,16 @@ func Test_parsePaymentNetworkSpecific(t *testing.T) {
 	}{
 		{
 			args: args{
-				id:    ID("01"),
 				value: "abcd",
 			},
 			want: &PaymentNetworkSpecific{
-				ID:    ID("01"),
 				Value: "abcd",
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := parsePaymentNetworkSpecific(tt.args.id, tt.args.value); !reflect.DeepEqual(got, tt.want) {
+			if got := parsePaymentNetworkSpecific(tt.args.value); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("parsePaymentNetworkSpecific() = %v, want %v", got, tt.want)
 			}
 		})
