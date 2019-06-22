@@ -1,6 +1,7 @@
 package mpm
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -72,7 +73,7 @@ const (
 type EMVQR struct {
 	PayloadFormatIndicator              string
 	PointOfInitiationMethod             PointOfInitiationMethod
-	MerchantAccountInformation          map[ID]*MerchantAccountInformationTemplate
+	MerchantAccountInformation          map[ID]*MerchantAccountInformation
 	MerchantCategoryCode                string
 	TransactionCurrency                 string
 	TransactionAmount                   string
@@ -90,7 +91,8 @@ type EMVQR struct {
 	UnreservedTemplates                 map[ID]*UnreservedTemplate
 }
 
-func parseEMVQR(payload string) (*EMVQR, error) {
+// ParseEMVQR ...
+func ParseEMVQR(payload string) (*EMVQR, error) {
 	p := NewParser(payload)
 	emvqr := &EMVQR{}
 	for p.Next() {
@@ -100,7 +102,7 @@ func parseEMVQR(payload string) (*EMVQR, error) {
 		case IDPayloadFormatIndicator:
 			emvqr.PayloadFormatIndicator = value
 		case IDPointOfInitiationMethod:
-			emvqr.PointOfInitiationMethod = PointOfInitiationMethod(value)
+			emvqr.PointOfInitiationMethod = ParsePointOfInitiationMethod(value)
 		case IDMerchantCategoryCode:
 			emvqr.MerchantCategoryCode = value
 		case IDTransactionCurrency:
@@ -122,7 +124,7 @@ func parseEMVQR(payload string) (*EMVQR, error) {
 		case IDPostalCode:
 			emvqr.PostalCode = value
 		case IDAdditionalDataFieldTemplate:
-			adft, err := parseAdditionalDataFieldTemplate(value)
+			adft, err := ParseAdditionalDataFieldTemplate(value)
 			if err != nil {
 				return nil, err
 			}
@@ -130,7 +132,7 @@ func parseEMVQR(payload string) (*EMVQR, error) {
 		case IDCRC:
 			emvqr.CRC = value
 		case IDMerchantInformationLanguageTemplate:
-			t, err := parseMerchantInformationLanguageTemplate(value)
+			t, err := ParseMerchantInformationLanguageTemplate(value)
 			if err != nil {
 				return nil, err
 			}
@@ -147,13 +149,9 @@ func parseEMVQR(payload string) (*EMVQR, error) {
 			}
 			if within {
 				if emvqr.MerchantAccountInformation == nil {
-					emvqr.MerchantAccountInformation = make(map[ID]*MerchantAccountInformationTemplate)
+					emvqr.MerchantAccountInformation = make(map[ID]*MerchantAccountInformation)
 				}
-				t, err := parseMerchantAccountInformationTemplate(value)
-				if err != nil {
-					return nil, err
-				}
-				emvqr.MerchantAccountInformation[id] = t
+				emvqr.MerchantAccountInformation[id] = ParseMerchantAccountInformation(value)
 				continue
 			}
 			// RFUforEMVCo
@@ -165,7 +163,7 @@ func parseEMVQR(payload string) (*EMVQR, error) {
 				if emvqr.RFUforEMVCo == nil {
 					emvqr.RFUforEMVCo = make(map[ID]*RFUforEMVCo)
 				}
-				emvqr.RFUforEMVCo[id] = parseRFUforEMVCo(value)
+				emvqr.RFUforEMVCo[id] = ParseRFUforEMVCo(value)
 				continue
 			}
 			// Unreserved Tempaltes
@@ -177,7 +175,7 @@ func parseEMVQR(payload string) (*EMVQR, error) {
 				if emvqr.UnreservedTemplates == nil {
 					emvqr.UnreservedTemplates = make(map[ID]*UnreservedTemplate)
 				}
-				emvqr.UnreservedTemplates[id] = parseUnreservedTemplate(value)
+				emvqr.UnreservedTemplates[id] = ParseUnreservedTemplate(value)
 				continue
 			}
 		}
@@ -188,16 +186,16 @@ func parseEMVQR(payload string) (*EMVQR, error) {
 	return emvqr, nil
 }
 
-// Stringify ...
-func (c *EMVQR) Stringify() (string, error) {
+// GeneratePayload
+func (c *EMVQR) GeneratePayload() (string, error) {
 	s := ""
 	s += format(IDPayloadFormatIndicator, c.PayloadFormatIndicator)
 	if c.PointOfInitiationMethod != "" {
-		s += c.PointOfInitiationMethod.Stringify()
+		s += c.PointOfInitiationMethod.GeneratePayload()
 	}
 	if len(c.MerchantAccountInformation) > 0 {
 		for id, t := range c.MerchantAccountInformation {
-			s += format(id, t.Stringify())
+			s += format(id, t.GeneratePayload())
 		}
 	}
 	if c.MerchantCategoryCode != "" {
@@ -231,19 +229,19 @@ func (c *EMVQR) Stringify() (string, error) {
 		s += format(IDPostalCode, c.PostalCode)
 	}
 	if c.AdditionalDataFieldTemplate != nil {
-		s += format(IDAdditionalDataFieldTemplate, c.AdditionalDataFieldTemplate.Stringify())
+		s += format(IDAdditionalDataFieldTemplate, c.AdditionalDataFieldTemplate.GeneratePayload())
 	}
 	if c.MerchantInformationLanguageTemplate != nil {
-		s += format(IDMerchantInformationLanguageTemplate, c.MerchantInformationLanguageTemplate.Stringify())
+		s += format(IDMerchantInformationLanguageTemplate, c.MerchantInformationLanguageTemplate.GeneratePayload())
 	}
 	if len(c.RFUforEMVCo) > 0 {
 		for id, t := range c.RFUforEMVCo {
-			s += format(id, t.Stringify())
+			s += format(id, t.GeneratePayload())
 		}
 	}
 	if len(c.UnreservedTemplates) > 0 {
 		for id, t := range c.UnreservedTemplates {
-			s += format(id, t.Stringify())
+			s += format(id, t.GeneratePayload())
 		}
 	}
 	s += formatCrc(s)
@@ -251,29 +249,98 @@ func (c *EMVQR) Stringify() (string, error) {
 }
 
 func (c *EMVQR) Validate() error {
+	// check mandatory
+	if c.PayloadFormatIndicator == "" {
+		return errors.New("PayloadFormatIndicator is mandatory")
+	}
+	if len(c.MerchantAccountInformation) <= 0 {
+		return errors.New("MerchantAccountInformation is mandatory")
+	}
+	if c.MerchantCategoryCode == "" {
+		return errors.New("MerchantCategoryCode is mandatory")
+	}
+	if c.TransactionCurrency == "" {
+		return errors.New("TransactionCurrency is mandatory")
+	}
+	if c.CountryCode == "" {
+		return errors.New("CountryCode is mandatory")
+	}
+	if c.MerchantName == "" {
+		return errors.New("MerchantName is mandatory")
+	}
+	if c.MerchantCity == "" {
+		return errors.New("MerchantCity is mandatory")
+	}
+	// check validate
+	if c.PointOfInitiationMethod != "" {
+		if err := c.PointOfInitiationMethod.Validate(); err != nil {
+			return err
+		}
+	}
+	for _, t := range c.MerchantAccountInformation {
+		if err := t.Validate(); err != nil {
+			return err
+		}
+	}
+	if c.AdditionalDataFieldTemplate != nil {
+		if err := c.AdditionalDataFieldTemplate.Validate(); err != nil {
+			return err
+		}
+	}
+	if c.MerchantInformationLanguageTemplate != nil {
+		if err := c.MerchantInformationLanguageTemplate.Validate(); err != nil {
+			return err
+		}
+	}
+	for _, t := range c.RFUforEMVCo {
+		if err := t.Validate(); err != nil {
+			return err
+		}
+	}
+	for _, t := range c.UnreservedTemplates {
+		if err := t.Validate(); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
+// PointOfInitiationMethod ...
 type PointOfInitiationMethod string
 
 const (
-	PointOfInitiationMethodStatic  PointOfInitiationMethod = "11"
+	// PointOfInitiationMethodStatic ...
+	PointOfInitiationMethodStatic PointOfInitiationMethod = "11"
+	// PointOfInitiationMethodDynamic ...
 	PointOfInitiationMethodDynamic PointOfInitiationMethod = "12"
 )
 
+// ParsePointOfInitiationMethod ...
+func ParsePointOfInitiationMethod(payload string) PointOfInitiationMethod {
+	return PointOfInitiationMethod(payload)
+}
+
+// GeneratePayload ...
+func (c PointOfInitiationMethod) GeneratePayload() string {
+	return format(IDPointOfInitiationMethod, string(c))
+}
+
 // IsStaticMethod ...
-func (m PointOfInitiationMethod) IsStaticMethod() bool {
-	return m == PointOfInitiationMethodStatic
+func (c PointOfInitiationMethod) IsStaticMethod() bool {
+	return c == PointOfInitiationMethodStatic
 }
 
 // IsDynamicMethod ...
-func (m PointOfInitiationMethod) IsDynamicMethod() bool {
-	return m == PointOfInitiationMethodDynamic
+func (c PointOfInitiationMethod) IsDynamicMethod() bool {
+	return c == PointOfInitiationMethodDynamic
 }
 
-// Stringify ...
-func (v PointOfInitiationMethod) Stringify() string {
-	return format(IDPointOfInitiationMethod, string(v))
+// Validate
+func (c PointOfInitiationMethod) Validate() error {
+	if !c.IsStaticMethod() && !c.IsDynamicMethod() {
+		return fmt.Errorf("PointOfInitiationMethod should be \"11\" or \"12\", PointOfInitiationMethod: %s", c)
+	}
+	return nil
 }
 
 // RFUforEMVCo ...
@@ -281,15 +348,21 @@ type RFUforEMVCo struct {
 	Value string
 }
 
-func parseRFUforEMVCo(value string) *RFUforEMVCo {
+// ParseRFUforEMVCo ...
+func ParseRFUforEMVCo(payload string) *RFUforEMVCo {
 	return &RFUforEMVCo{
-		Value: value,
+		Value: payload,
 	}
 }
 
-// Stringify ...
-func (v RFUforEMVCo) Stringify() string {
-	return v.Value
+// GeneratePayload ...
+func (c *RFUforEMVCo) GeneratePayload() string {
+	return c.Value
+}
+
+// Validate ...
+func (c *RFUforEMVCo) Validate() error {
+	return nil
 }
 
 // UnreservedTemplate ...
@@ -297,105 +370,60 @@ type UnreservedTemplate struct {
 	Value string
 }
 
-func parseUnreservedTemplate(value string) *UnreservedTemplate {
+// ParseUnreservedTemplate ...
+func ParseUnreservedTemplate(payload string) *UnreservedTemplate {
 	return &UnreservedTemplate{
-		Value: value,
+		Value: payload,
 	}
 }
 
-// Stringify ...
-func (v UnreservedTemplate) Stringify() string {
-	return v.Value
+// GeneratePayload ...
+func (c *UnreservedTemplate) GeneratePayload() string {
+	return c.Value
 }
 
-// Merchant Account Information (IDs "02" to "51")
-const (
-	MerchantAccountIDGloballyUniqueIdentifier         = "00" // (M) Globally Unique Identifier
-	MerchantAccountIDPaymentNetworkSpecificRangeStart = "01" // (O) 01-99 Payment network specific
-	MerchantAccountIDPaymentNetworkSpecificRangeEnd   = "99" // (O) 01-99 Payment network specific
-)
+// Validate ...
+func (c *UnreservedTemplate) Validate() error {
+	return nil
+}
 
 // MerchantAccountInformation ...
-type MerchantAccountInformationTemplate struct {
-	GloballyUniqueIdentifier string
-	PaymentNetworkSpecific   map[ID]*PaymentNetworkSpecific
-}
-
-func parseMerchantAccountInformationTemplate(payload string) (*MerchantAccountInformationTemplate, error) {
-	p := NewParser(payload)
-	merchantAccountInformation := &MerchantAccountInformationTemplate{}
-	for p.Next() {
-		id := p.ID()
-		value := p.Value()
-		switch id {
-		case MerchantAccountIDGloballyUniqueIdentifier:
-			merchantAccountInformation.GloballyUniqueIdentifier = value
-		default:
-			var (
-				within bool
-				err    error
-			)
-			// Payment Network Specific
-			within, err = id.Between(MerchantAccountIDPaymentNetworkSpecificRangeStart, MerchantAccountIDPaymentNetworkSpecificRangeEnd)
-			if err != nil {
-				return nil, err
-			}
-			if within {
-				if merchantAccountInformation.PaymentNetworkSpecific == nil {
-					merchantAccountInformation.PaymentNetworkSpecific = make(map[ID]*PaymentNetworkSpecific)
-				}
-				merchantAccountInformation.PaymentNetworkSpecific[id] = parsePaymentNetworkSpecific(value)
-				continue
-			}
-		}
-	}
-	if err := p.Err(); err != nil {
-		return nil, err
-	}
-	return merchantAccountInformation, nil
-}
-
-func (c MerchantAccountInformationTemplate) Stringify() string {
-	s := ""
-	s += format(MerchantAccountIDGloballyUniqueIdentifier, c.GloballyUniqueIdentifier)
-	if len(c.PaymentNetworkSpecific) > 0 {
-		for id, t := range c.PaymentNetworkSpecific {
-			s += format(id, t.Stringify())
-		}
-	}
-	return s
-}
-
-// PaymentNetworkSpecific ...
-type PaymentNetworkSpecific struct {
+type MerchantAccountInformation struct {
 	Value string
 }
 
-func parsePaymentNetworkSpecific(value string) *PaymentNetworkSpecific {
-	return &PaymentNetworkSpecific{
-		Value: value,
+// ParseMerchantAccountInformation ...
+func ParseMerchantAccountInformation(payload string) *MerchantAccountInformation {
+	return &MerchantAccountInformation{
+		Value: payload,
 	}
 }
 
-func (c PaymentNetworkSpecific) Stringify() string {
+// GeneratePayload ...
+func (c *MerchantAccountInformation) GeneratePayload() string {
 	return c.Value
+}
+
+// GeneratePayload ...
+func (c *MerchantAccountInformation) Validate() error {
+	return nil
 }
 
 // Data Objects for Additional Data Field Template (ID "62")
 const (
-	AdditionalIDBillNumber                               ID = "01"
-	AdditionalIDMobileNumber                             ID = "02"
-	AdditionalIDStoreLabel                               ID = "03"
-	AdditionalIDLoyaltyNumber                            ID = "04"
-	AdditionalIDReferenceLabel                           ID = "05"
-	AdditionalIDCustomerLabel                            ID = "06"
-	AdditionalIDTerminalLabel                            ID = "07"
-	AdditionalIDPurposeTransaction                       ID = "08"
-	AdditionalIDAdditionalConsumerDataRequest            ID = "09"
-	AdditionalIDRFUforEMVCoRangeStart                    ID = "10"
-	AdditionalIDRFUforEMVCoRangeEnd                      ID = "49"
-	AdditionalIDPaymentSystemSpecificTemplatesRangeStart ID = "50"
-	AdditionalIDPaymentSystemSpecificTemplatesRangeEnd   ID = "99"
+	AdditionalIDBillNumber                               ID = "01" // (O) Bill Number
+	AdditionalIDMobileNumber                             ID = "02" // (O) Mobile Number
+	AdditionalIDStoreLabel                               ID = "03" // (O) Store Label
+	AdditionalIDLoyaltyNumber                            ID = "04" // (O) Loyalty Number
+	AdditionalIDReferenceLabel                           ID = "05" // (O) Reference Label
+	AdditionalIDCustomerLabel                            ID = "06" // (O) Customer Label
+	AdditionalIDTerminalLabel                            ID = "07" // (O) Terminal Label
+	AdditionalIDPurposeTransaction                       ID = "08" // (O) Purpose Transaction
+	AdditionalIDAdditionalConsumerDataRequest            ID = "09" // (O) Additional Consumer Data Request
+	AdditionalIDRFUforEMVCoRangeStart                    ID = "10" // (O) RFU for EMVCo
+	AdditionalIDRFUforEMVCoRangeEnd                      ID = "49" // (O) RFU for EMVCo
+	AdditionalIDPaymentSystemSpecificTemplatesRangeStart ID = "50" // (O) Payment System Specific Templates
+	AdditionalIDPaymentSystemSpecificTemplatesRangeEnd   ID = "99" // (O) Payment System Specific Templates
 )
 
 // AdditionalDataFieldTemplate ...
@@ -410,10 +438,10 @@ type AdditionalDataFieldTemplate struct {
 	PurposeTransaction            string
 	AdditionalConsumerDataRequest string
 	RFUforEMVCo                   map[ID]*RFUforEMVCo
-	PaymentSystemSpecific         map[ID]*PaymentSystemSpecificTemplate
+	PaymentSystemSpecific         map[ID]*PaymentSystemSpecific
 }
 
-func parseAdditionalDataFieldTemplate(payload string) (*AdditionalDataFieldTemplate, error) {
+func ParseAdditionalDataFieldTemplate(payload string) (*AdditionalDataFieldTemplate, error) {
 	p := NewParser(payload)
 	additionalDataFieldTemplate := &AdditionalDataFieldTemplate{}
 	for p.Next() {
@@ -450,13 +478,9 @@ func parseAdditionalDataFieldTemplate(payload string) (*AdditionalDataFieldTempl
 			}
 			if within {
 				if additionalDataFieldTemplate.PaymentSystemSpecific == nil {
-					additionalDataFieldTemplate.PaymentSystemSpecific = make(map[ID]*PaymentSystemSpecificTemplate)
+					additionalDataFieldTemplate.PaymentSystemSpecific = make(map[ID]*PaymentSystemSpecific)
 				}
-				paymentSystemSpecific, err := parsePaymentSystemSpecificTemplate(value)
-				if err != nil {
-					return nil, err
-				}
-				additionalDataFieldTemplate.PaymentSystemSpecific[id] = paymentSystemSpecific
+				additionalDataFieldTemplate.PaymentSystemSpecific[id] = ParsePaymentSystemSpecific(value)
 				continue
 			}
 			// RFU for EMVCo
@@ -468,7 +492,7 @@ func parseAdditionalDataFieldTemplate(payload string) (*AdditionalDataFieldTempl
 				if additionalDataFieldTemplate.RFUforEMVCo == nil {
 					additionalDataFieldTemplate.RFUforEMVCo = make(map[ID]*RFUforEMVCo)
 				}
-				additionalDataFieldTemplate.RFUforEMVCo[id] = parseRFUforEMVCo(value)
+				additionalDataFieldTemplate.RFUforEMVCo[id] = ParseRFUforEMVCo(value)
 				continue
 			}
 		}
@@ -479,8 +503,8 @@ func parseAdditionalDataFieldTemplate(payload string) (*AdditionalDataFieldTempl
 	return additionalDataFieldTemplate, nil
 }
 
-// Stringify ...
-func (c *AdditionalDataFieldTemplate) Stringify() string {
+// GeneratePayload ...
+func (c *AdditionalDataFieldTemplate) GeneratePayload() string {
 	s := ""
 	if c.BillNumber != "" {
 		s += format(AdditionalIDBillNumber, c.BillNumber)
@@ -511,76 +535,20 @@ func (c *AdditionalDataFieldTemplate) Stringify() string {
 	}
 	if len(c.RFUforEMVCo) > 0 {
 		for k, t := range c.RFUforEMVCo {
-			s += format(ID(k), t.Stringify())
+			s += format(ID(k), t.GeneratePayload())
 		}
 	}
 	if len(c.PaymentSystemSpecific) > 0 {
 		for k, t := range c.PaymentSystemSpecific {
-			s += format(ID(k), t.Stringify())
+			s += format(ID(k), t.GeneratePayload())
 		}
 	}
 	return s
 }
 
-// Additional Payment System Specific
-const (
-	PaymentSystemIDGloballyUniqueIdentifier        = "00" // (M) Globally Unique Identifier
-	PaymentSystemIDPaymentSystemSpecificRangeStart = "01" // (O) 01-99 Payment System specific
-	PaymentSystemIDPaymentSystemSpecificRangeEnd   = "99" // (O) 01-99 Payment System specific
-)
-
-// PaymentSystemSpecificTemplate ...
-type PaymentSystemSpecificTemplate struct {
-	GloballyUniqueIdentifier string
-	PaymentSystemSpecific    map[ID]*PaymentSystemSpecific
-}
-
-func parsePaymentSystemSpecificTemplate(payload string) (*PaymentSystemSpecificTemplate, error) {
-	p := NewParser(payload)
-	paymentSystemSpecificTemplate := &PaymentSystemSpecificTemplate{}
-	for p.Next() {
-		id := p.ID()
-		value := p.Value()
-		switch id {
-		case PaymentSystemIDGloballyUniqueIdentifier:
-			paymentSystemSpecificTemplate.GloballyUniqueIdentifier = value
-		default:
-			var (
-				within bool
-				err    error
-			)
-			// Payment System Specific
-			within, err = id.Between(PaymentSystemIDPaymentSystemSpecificRangeStart, PaymentSystemIDPaymentSystemSpecificRangeEnd)
-			if err != nil {
-				return nil, err
-			}
-			if within {
-				if paymentSystemSpecificTemplate.PaymentSystemSpecific == nil {
-					paymentSystemSpecificTemplate.PaymentSystemSpecific = make(map[ID]*PaymentSystemSpecific)
-				}
-				paymentSystemSpecificTemplate.PaymentSystemSpecific[id] = parsePaymentSystemSpecific(value)
-				continue
-			}
-		}
-	}
-	if err := p.Err(); err != nil {
-		return nil, err
-	}
-	return paymentSystemSpecificTemplate, nil
-}
-
-// Stringify ...
-func (c *PaymentSystemSpecificTemplate) Stringify() string {
-	s := ""
-	if c.GloballyUniqueIdentifier != "" {
-		s += format(PaymentSystemIDGloballyUniqueIdentifier, c.GloballyUniqueIdentifier)
-	}
-	if len(c.PaymentSystemSpecific) > 0 {
-		for id, t := range c.PaymentSystemSpecific {
-			s += format(id, t.Stringify())
-		}
-	}
-	return s
+// Validate ...
+func (c *AdditionalDataFieldTemplate) Validate() error {
+	return nil
 }
 
 // PaymentSystemSpecific ...
@@ -588,22 +556,23 @@ type PaymentSystemSpecific struct {
 	Value string
 }
 
-func parsePaymentSystemSpecific(value string) *PaymentSystemSpecific {
+// ParsePaymentSystemSpecific ...
+func ParsePaymentSystemSpecific(value string) *PaymentSystemSpecific {
 	return &PaymentSystemSpecific{Value: value}
 }
 
-// Stringify ...
-func (v *PaymentSystemSpecific) Stringify() string {
+// GeneratePayload ...
+func (v *PaymentSystemSpecific) GeneratePayload() string {
 	return v.Value
 }
 
 // Data Objects for Merchant Information—Language Template (ID "64")
 const (
-	MerchantInformationIDLanguagePreference    = "00"
-	MerchantInformationIDMerchantName          = "01"
-	MerchantInformationIDMerchantCity          = "02"
-	MerchantInformationIDRFUforEMVCoRangeStart = "03"
-	MerchantInformationIDRFUforEMVCoRangeEnd   = "99"
+	MerchantInformationIDLanguagePreference    = "00" // (M) Language Preference
+	MerchantInformationIDMerchantName          = "01" // (M) Merchant Name
+	MerchantInformationIDMerchantCity          = "02" // (O) Merchant City
+	MerchantInformationIDRFUforEMVCoRangeStart = "03" // (O) 03-99 RFU for EMVCo
+	MerchantInformationIDRFUforEMVCoRangeEnd   = "99" // (O) 03-99 RFU for EMVCo
 )
 
 // MerchantInformationLanguageTemplate ...
@@ -614,7 +583,8 @@ type MerchantInformationLanguageTemplate struct {
 	RFUForEMVCo        map[ID]*RFUforEMVCo
 }
 
-func parseMerchantInformationLanguageTemplate(value string) (*MerchantInformationLanguageTemplate, error) {
+// ParseMerchantInformationLanguageTemplate ...
+func ParseMerchantInformationLanguageTemplate(value string) (*MerchantInformationLanguageTemplate, error) {
 	p := NewParser(value)
 	merchantInformationLanguageTemplate := &MerchantInformationLanguageTemplate{}
 	for p.Next() {
@@ -641,7 +611,7 @@ func parseMerchantInformationLanguageTemplate(value string) (*MerchantInformatio
 				if merchantInformationLanguageTemplate.RFUForEMVCo == nil {
 					merchantInformationLanguageTemplate.RFUForEMVCo = make(map[ID]*RFUforEMVCo)
 				}
-				merchantInformationLanguageTemplate.RFUForEMVCo[id] = parseRFUforEMVCo(value)
+				merchantInformationLanguageTemplate.RFUForEMVCo[id] = ParseRFUforEMVCo(value)
 				continue
 			}
 		}
@@ -652,7 +622,8 @@ func parseMerchantInformationLanguageTemplate(value string) (*MerchantInformatio
 	return merchantInformationLanguageTemplate, nil
 }
 
-func (c *MerchantInformationLanguageTemplate) Stringify() string {
+// GeneratePayload ...
+func (c *MerchantInformationLanguageTemplate) GeneratePayload() string {
 	s := ""
 	if c.LanguagePreference != "" {
 		s += format(MerchantInformationIDLanguagePreference, c.LanguagePreference)
@@ -665,10 +636,28 @@ func (c *MerchantInformationLanguageTemplate) Stringify() string {
 	}
 	if len(c.RFUForEMVCo) > 0 {
 		for id, t := range c.RFUForEMVCo {
-			s += format(id, t.Stringify())
+			s += format(id, t.GeneratePayload())
 		}
 	}
 	return s
+}
+
+// Validate ...
+func (c *MerchantInformationLanguageTemplate) Validate() error {
+	// check mandatory
+	if c.LanguagePreference == "" {
+		return errors.New("LanguagePreference is mandatory")
+	}
+	if c.MerchantName == "" {
+		return errors.New("MerchantName is mandatory")
+	}
+	// check validate
+	for _, t := range c.RFUForEMVCo {
+		if err := t.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func format(id ID, value string) string {

@@ -212,7 +212,7 @@ func TestID_Between(t *testing.T) {
 	}
 }
 
-func Test_parseEMVQR(t *testing.T) {
+func Test_ParseEMVQR(t *testing.T) {
 	type args struct {
 		payload string
 	}
@@ -426,14 +426,9 @@ func Test_parseEMVQR(t *testing.T) {
 				payload: "02160004hoge0104abcd",
 			},
 			want: &EMVQR{
-				MerchantAccountInformation: map[ID]*MerchantAccountInformationTemplate{
-					ID("02"): &MerchantAccountInformationTemplate{
-						GloballyUniqueIdentifier: "hoge",
-						PaymentNetworkSpecific: map[ID]*PaymentNetworkSpecific{
-							ID("01"): &PaymentNetworkSpecific{
-								Value: "abcd",
-							},
-						},
+				MerchantAccountInformation: map[ID]*MerchantAccountInformation{
+					ID("02"): &MerchantAccountInformation{
+						Value: "0004hoge0104abcd",
 					},
 				},
 			},
@@ -442,7 +437,7 @@ func Test_parseEMVQR(t *testing.T) {
 		{
 			name: "parse failed merchant account information",
 			args: args{
-				payload: "02140004hoge0104ab", // not enough length
+				payload: "02140004hoge0104", // not enough length
 			},
 			want:    nil,
 			wantErr: true,
@@ -453,22 +448,12 @@ func Test_parseEMVQR(t *testing.T) {
 				payload: "02160004hoge0104abcd26160004fuga0204efgh",
 			},
 			want: &EMVQR{
-				MerchantAccountInformation: map[ID]*MerchantAccountInformationTemplate{
-					ID("02"): &MerchantAccountInformationTemplate{
-						GloballyUniqueIdentifier: "hoge",
-						PaymentNetworkSpecific: map[ID]*PaymentNetworkSpecific{
-							ID("01"): &PaymentNetworkSpecific{
-								Value: "abcd",
-							},
-						},
+				MerchantAccountInformation: map[ID]*MerchantAccountInformation{
+					ID("02"): &MerchantAccountInformation{
+						Value: "0004hoge0104abcd",
 					},
-					ID("26"): &MerchantAccountInformationTemplate{
-						GloballyUniqueIdentifier: "fuga",
-						PaymentNetworkSpecific: map[ID]*PaymentNetworkSpecific{
-							ID("02"): &PaymentNetworkSpecific{
-								Value: "efgh",
-							},
-						},
+					ID("26"): &MerchantAccountInformation{
+						Value: "0004fuga0204efgh",
 					},
 				},
 			},
@@ -539,23 +524,23 @@ func Test_parseEMVQR(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := parseEMVQR(tt.args.payload)
+			got, err := ParseEMVQR(tt.args.payload)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("parseEMVQR() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ParseEMVQR() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("parseEMVQR() = %v, want %v", got, tt.want)
+				t.Errorf("ParseEMVQR() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestEMVQR_Stringify(t *testing.T) {
+func TestEMVQR_GeneratePayload(t *testing.T) {
 	type fields struct {
 		PayloadFormatIndicator              string
 		PointOfInitiationMethod             PointOfInitiationMethod
-		MerchantAccountInformation          map[ID]*MerchantAccountInformationTemplate
+		MerchantAccountInformation          map[ID]*MerchantAccountInformation
 		MerchantCategoryCode                string
 		TransactionCurrency                 string
 		TransactionAmount                   string
@@ -708,14 +693,9 @@ func TestEMVQR_Stringify(t *testing.T) {
 		{
 			name: "stringify merchant account information",
 			fields: fields{
-				MerchantAccountInformation: map[ID]*MerchantAccountInformationTemplate{
-					ID("02"): &MerchantAccountInformationTemplate{
-						GloballyUniqueIdentifier: "hoge",
-						PaymentNetworkSpecific: map[ID]*PaymentNetworkSpecific{
-							ID("01"): &PaymentNetworkSpecific{
-								Value: "abcd",
-							},
-						},
+				MerchantAccountInformation: map[ID]*MerchantAccountInformation{
+					ID("02"): &MerchantAccountInformation{
+						Value: "0004hoge0104abcd",
 					},
 				},
 			},
@@ -769,13 +749,271 @@ func TestEMVQR_Stringify(t *testing.T) {
 				RFUforEMVCo:                         tt.fields.RFUforEMVCo,
 				UnreservedTemplates:                 tt.fields.UnreservedTemplates,
 			}
-			got, err := c.Stringify()
+			got, err := c.GeneratePayload()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("EMVQR.Stringify() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("EMVQR.GeneratePayload() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("EMVQR.Stringify() = %v, want %v", got, tt.want)
+				t.Errorf("EMVQR.GeneratePayload() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestEMVQR_Validate(t *testing.T) {
+	type fields struct {
+		PayloadFormatIndicator              string
+		PointOfInitiationMethod             PointOfInitiationMethod
+		MerchantAccountInformation          map[ID]*MerchantAccountInformation
+		MerchantCategoryCode                string
+		TransactionCurrency                 string
+		TransactionAmount                   string
+		TipOrConvenienceIndicator           string
+		ValueOfConvenienceFeeFixed          string
+		ValueOfConvenienceFeePercentage     string
+		CountryCode                         string
+		MerchantName                        string
+		MerchantCity                        string
+		PostalCode                          string
+		AdditionalDataFieldTemplate         *AdditionalDataFieldTemplate
+		CRC                                 string
+		MerchantInformationLanguageTemplate *MerchantInformationLanguageTemplate
+		RFUforEMVCo                         map[ID]*RFUforEMVCo
+		UnreservedTemplates                 map[ID]*UnreservedTemplate
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			name: "minimum ok",
+			fields: fields{
+				PayloadFormatIndicator: "01",
+				MerchantAccountInformation: map[ID]*MerchantAccountInformation{
+					ID("02"): &MerchantAccountInformation{},
+				},
+				MerchantCategoryCode: "1443",
+				TransactionCurrency:  "354",
+				CountryCode:          "JP",
+				MerchantName:         "Sample",
+				MerchantCity:         "tokyo",
+			},
+			wantErr: false,
+		},
+		{
+			name:    "lack of PayloadFormatIndicator",
+			fields:  fields{},
+			wantErr: true,
+		},
+		{
+			name: "lack of MerchantAccountInformation",
+			fields: fields{
+				PayloadFormatIndicator: "01",
+			},
+			wantErr: true,
+		},
+		{
+			name: "lack of MerchantCategoryCode",
+			fields: fields{
+				PayloadFormatIndicator: "01",
+				MerchantAccountInformation: map[ID]*MerchantAccountInformation{
+					ID("02"): &MerchantAccountInformation{},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "lack of TransactionCurrency",
+			fields: fields{
+				PayloadFormatIndicator: "01",
+				MerchantAccountInformation: map[ID]*MerchantAccountInformation{
+					ID("02"): &MerchantAccountInformation{},
+				},
+				MerchantCategoryCode: "1443",
+			},
+			wantErr: true,
+		},
+		{
+			name: "lack of CountryCode",
+			fields: fields{
+				PayloadFormatIndicator: "01",
+				MerchantAccountInformation: map[ID]*MerchantAccountInformation{
+					ID("02"): &MerchantAccountInformation{},
+				},
+				MerchantCategoryCode: "1443",
+				TransactionCurrency:  "354",
+			},
+			wantErr: true,
+		},
+		{
+			name: "lack of MerchantName",
+			fields: fields{
+				PayloadFormatIndicator: "01",
+				MerchantAccountInformation: map[ID]*MerchantAccountInformation{
+					ID("02"): &MerchantAccountInformation{},
+				},
+				MerchantCategoryCode: "1443",
+				TransactionCurrency:  "354",
+				CountryCode:          "JP",
+			},
+			wantErr: true,
+		},
+		{
+			name: "lack of MerchantCity",
+			fields: fields{
+				PayloadFormatIndicator: "01",
+				MerchantAccountInformation: map[ID]*MerchantAccountInformation{
+					ID("02"): &MerchantAccountInformation{},
+				},
+				MerchantCategoryCode: "1443",
+				TransactionCurrency:  "354",
+				CountryCode:          "JP",
+				MerchantName:         "Sample",
+			},
+			wantErr: true,
+		},
+		{
+			name: "PointOfInitiationMethod is unknown",
+			fields: fields{
+				PayloadFormatIndicator: "01",
+				MerchantAccountInformation: map[ID]*MerchantAccountInformation{
+					ID("02"): &MerchantAccountInformation{},
+				},
+				MerchantCategoryCode:    "1443",
+				TransactionCurrency:     "354",
+				CountryCode:             "JP",
+				MerchantName:            "Sample",
+				MerchantCity:            "tokyo",
+				PointOfInitiationMethod: "00", // should be 11 or 12
+			},
+			wantErr: true,
+		},
+		{
+			name: "PointOfInitiationMethod is unknown",
+			fields: fields{
+				PayloadFormatIndicator: "01",
+				MerchantAccountInformation: map[ID]*MerchantAccountInformation{
+					ID("02"): &MerchantAccountInformation{},
+				},
+				MerchantCategoryCode:    "1443",
+				TransactionCurrency:     "354",
+				CountryCode:             "JP",
+				MerchantName:            "Sample",
+				MerchantCity:            "tokyo",
+				PointOfInitiationMethod: "00", // should be 11 or 12
+			},
+			wantErr: true,
+		},
+		{
+			name: "failed validate merchant information language template",
+			fields: fields{
+				PayloadFormatIndicator: "01",
+				MerchantAccountInformation: map[ID]*MerchantAccountInformation{
+					ID("02"): &MerchantAccountInformation{},
+				},
+				MerchantCategoryCode:                "1443",
+				TransactionCurrency:                 "354",
+				CountryCode:                         "JP",
+				MerchantName:                        "Sample",
+				MerchantCity:                        "tokyo",
+				MerchantInformationLanguageTemplate: &MerchantInformationLanguageTemplate{},
+			},
+			wantErr: true,
+		},
+		{
+			name: "exist merchant account information",
+			fields: fields{
+				PayloadFormatIndicator: "01",
+				MerchantAccountInformation: map[ID]*MerchantAccountInformation{
+					ID("02"): &MerchantAccountInformation{},
+				},
+				MerchantCategoryCode: "1443",
+				TransactionCurrency:  "354",
+				CountryCode:          "JP",
+				MerchantName:         "Sample",
+				MerchantCity:         "tokyo",
+			},
+			wantErr: false,
+		},
+		{
+			name: "exist additional data field template",
+			fields: fields{
+				PayloadFormatIndicator: "01",
+				MerchantAccountInformation: map[ID]*MerchantAccountInformation{
+					ID("02"): &MerchantAccountInformation{},
+				},
+				MerchantCategoryCode:        "1443",
+				TransactionCurrency:         "354",
+				CountryCode:                 "JP",
+				MerchantName:                "Sample",
+				MerchantCity:                "tokyo",
+				AdditionalDataFieldTemplate: &AdditionalDataFieldTemplate{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "exist RFU for EMVCo",
+			fields: fields{
+				PayloadFormatIndicator: "01",
+				MerchantAccountInformation: map[ID]*MerchantAccountInformation{
+					ID("02"): &MerchantAccountInformation{},
+				},
+				MerchantCategoryCode: "1443",
+				TransactionCurrency:  "354",
+				CountryCode:          "JP",
+				MerchantName:         "Sample",
+				MerchantCity:         "tokyo",
+				RFUforEMVCo: map[ID]*RFUforEMVCo{
+					ID("79"): &RFUforEMVCo{},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "exist unreserved template",
+			fields: fields{
+				PayloadFormatIndicator: "01",
+				MerchantAccountInformation: map[ID]*MerchantAccountInformation{
+					ID("02"): &MerchantAccountInformation{},
+				},
+				MerchantCategoryCode: "1443",
+				TransactionCurrency:  "354",
+				CountryCode:          "JP",
+				MerchantName:         "Sample",
+				MerchantCity:         "tokyo",
+				UnreservedTemplates: map[ID]*UnreservedTemplate{
+					ID("99"): &UnreservedTemplate{},
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &EMVQR{
+				PayloadFormatIndicator:              tt.fields.PayloadFormatIndicator,
+				PointOfInitiationMethod:             tt.fields.PointOfInitiationMethod,
+				MerchantAccountInformation:          tt.fields.MerchantAccountInformation,
+				MerchantCategoryCode:                tt.fields.MerchantCategoryCode,
+				TransactionCurrency:                 tt.fields.TransactionCurrency,
+				TransactionAmount:                   tt.fields.TransactionAmount,
+				TipOrConvenienceIndicator:           tt.fields.TipOrConvenienceIndicator,
+				ValueOfConvenienceFeeFixed:          tt.fields.ValueOfConvenienceFeeFixed,
+				ValueOfConvenienceFeePercentage:     tt.fields.ValueOfConvenienceFeePercentage,
+				CountryCode:                         tt.fields.CountryCode,
+				MerchantName:                        tt.fields.MerchantName,
+				MerchantCity:                        tt.fields.MerchantCity,
+				PostalCode:                          tt.fields.PostalCode,
+				AdditionalDataFieldTemplate:         tt.fields.AdditionalDataFieldTemplate,
+				CRC:                                 tt.fields.CRC,
+				MerchantInformationLanguageTemplate: tt.fields.MerchantInformationLanguageTemplate,
+				RFUforEMVCo:                         tt.fields.RFUforEMVCo,
+				UnreservedTemplates:                 tt.fields.UnreservedTemplates,
+			}
+			if err := c.Validate(); (err != nil) != tt.wantErr {
+				t.Errorf("EMVQR.Validate() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
@@ -843,7 +1081,7 @@ func TestPointOfInitiationMethod_IsDynamicMethod(t *testing.T) {
 	}
 }
 
-func TestPointOfInitiationMethod_Stringify(t *testing.T) {
+func TestPointOfInitiationMethod_GeneratePayload(t *testing.T) {
 	tests := []struct {
 		name string
 		m    PointOfInitiationMethod
@@ -857,14 +1095,45 @@ func TestPointOfInitiationMethod_Stringify(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.m.Stringify(); got != tt.want {
-				t.Errorf("PointOfInitiationMethod.Stringify() = %v, want %v", got, tt.want)
+			if got := tt.m.GeneratePayload(); got != tt.want {
+				t.Errorf("PointOfInitiationMethod.GeneratePayload() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_parseRFUforEMVCo(t *testing.T) {
+func TestPointOfInitiationMethod_Validate(t *testing.T) {
+	tests := []struct {
+		name    string
+		c       PointOfInitiationMethod
+		wantErr bool
+	}{
+		{
+			name:    "unknown method",
+			c:       PointOfInitiationMethod("00"),
+			wantErr: true,
+		},
+		{
+			name:    "static method",
+			c:       PointOfInitiationMethod("11"),
+			wantErr: false,
+		},
+		{
+			name:    "dynamic method",
+			c:       PointOfInitiationMethod("12"),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.c.Validate(); (err != nil) != tt.wantErr {
+				t.Errorf("PointOfInitiationMethod.Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_ParseRFUforEMVCo(t *testing.T) {
 	type args struct {
 		value string
 	}
@@ -884,14 +1153,42 @@ func Test_parseRFUforEMVCo(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := parseRFUforEMVCo(tt.args.value); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("parseRFUforEMVCo() = %v, want %v", got, tt.want)
+			if got := ParseRFUforEMVCo(tt.args.value); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ParseRFUforEMVCo() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_parseUnreservedTemplate(t *testing.T) {
+func TestRFUforEMVCo_Validate(t *testing.T) {
+	type fields struct {
+		Value string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			fields: fields{
+				Value: "abcd",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &RFUforEMVCo{
+				Value: tt.fields.Value,
+			}
+			if err := c.Validate(); (err != nil) != tt.wantErr {
+				t.Errorf("RFUforEMVCo.Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_ParseUnreservedTemplate(t *testing.T) {
 	type args struct {
 		id    ID
 		value string
@@ -912,89 +1209,97 @@ func Test_parseUnreservedTemplate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := parseUnreservedTemplate(tt.args.value); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("parseUnreservedTemplate() = %v, want %v", got, tt.want)
+			if got := ParseUnreservedTemplate(tt.args.value); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ParseUnreservedTemplate() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_parseMerchantAccountInformationTemplate(t *testing.T) {
+func TestUnreservedTemplate_Validate(t *testing.T) {
+	type fields struct {
+		Value string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			fields: fields{
+				Value: "abcd",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &UnreservedTemplate{
+				Value: tt.fields.Value,
+			}
+			if err := c.Validate(); (err != nil) != tt.wantErr {
+				t.Errorf("UnreservedTemplate.Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_ParseMerchantAccountInformationTemplate(t *testing.T) {
 	type args struct {
 		payload string
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    *MerchantAccountInformationTemplate
-		wantErr bool
+		name string
+		args args
+		want *MerchantAccountInformation
 	}{
 		{
 			name: "empty payload",
 			args: args{
 				payload: "",
 			},
-			want: &MerchantAccountInformationTemplate{},
-		},
-		{
-			name: "id parse error",
-			args: args{
-				payload: "ab",
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "value parse error",
-			args: args{
-				payload: "00020",
-			},
-			want:    nil,
-			wantErr: true,
+			want: &MerchantAccountInformation{},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := parseMerchantAccountInformationTemplate(tt.args.payload)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("parseMerchantAccountInformation() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			got := ParseMerchantAccountInformation(tt.args.payload)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("parseMerchantAccountInformation() = %v, want %v", got, tt.want)
+				t.Errorf("ParseMerchantAccountInformation() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_parsePaymentNetworkSpecific(t *testing.T) {
-	type args struct {
-		value string
+func TestMerchantAccountInformation_Validate(t *testing.T) {
+	type fields struct {
+		Value string
 	}
 	tests := []struct {
-		name string
-		args args
-		want *PaymentNetworkSpecific
+		name    string
+		fields  fields
+		wantErr bool
 	}{
 		{
-			args: args{
-				value: "abcd",
-			},
-			want: &PaymentNetworkSpecific{
+			fields: fields{
 				Value: "abcd",
 			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := parsePaymentNetworkSpecific(tt.args.value); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("parsePaymentNetworkSpecific() = %v, want %v", got, tt.want)
+			c := &MerchantAccountInformation{
+				Value: tt.fields.Value,
+			}
+			if err := c.Validate(); (err != nil) != tt.wantErr {
+				t.Errorf("MerchantAccountInformation.Validate() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func Test_parseAdditionalDataFieldTemplate(t *testing.T) {
+func Test_ParseAdditionalDataFieldTemplate(t *testing.T) {
 	type args struct {
 		payload string
 	}
@@ -1124,12 +1429,9 @@ func Test_parseAdditionalDataFieldTemplate(t *testing.T) {
 				payload: "50160004hoge0104abcd",
 			},
 			want: &AdditionalDataFieldTemplate{
-				PaymentSystemSpecific: map[ID]*PaymentSystemSpecificTemplate{
-					ID("50"): &PaymentSystemSpecificTemplate{
-						GloballyUniqueIdentifier: "hoge",
-						PaymentSystemSpecific: map[ID]*PaymentSystemSpecific{
-							ID("01"): &PaymentSystemSpecific{Value: "abcd"},
-						},
+				PaymentSystemSpecific: map[ID]*PaymentSystemSpecific{
+					ID("50"): &PaymentSystemSpecific{
+						Value: "0004hoge0104abcd",
 					},
 				},
 			},
@@ -1138,7 +1440,7 @@ func Test_parseAdditionalDataFieldTemplate(t *testing.T) {
 		{
 			name: "parse failed payment system specific",
 			args: args{
-				payload: "50140004hoge0104ab", // not enough length
+				payload: "50140004hoge0104", // not enough length
 			},
 			want:    nil,
 			wantErr: true,
@@ -1149,18 +1451,12 @@ func Test_parseAdditionalDataFieldTemplate(t *testing.T) {
 				payload: "50160004hoge0104abcd99160004fuga0304efgh",
 			},
 			want: &AdditionalDataFieldTemplate{
-				PaymentSystemSpecific: map[ID]*PaymentSystemSpecificTemplate{
-					ID("50"): &PaymentSystemSpecificTemplate{
-						GloballyUniqueIdentifier: "hoge",
-						PaymentSystemSpecific: map[ID]*PaymentSystemSpecific{
-							ID("01"): &PaymentSystemSpecific{Value: "abcd"},
-						},
+				PaymentSystemSpecific: map[ID]*PaymentSystemSpecific{
+					ID("50"): &PaymentSystemSpecific{
+						Value: "0004hoge0104abcd",
 					},
-					ID("99"): &PaymentSystemSpecificTemplate{
-						GloballyUniqueIdentifier: "fuga",
-						PaymentSystemSpecific: map[ID]*PaymentSystemSpecific{
-							ID("03"): &PaymentSystemSpecific{Value: "efgh"},
-						},
+					ID("99"): &PaymentSystemSpecific{
+						Value: "0004fuga0304efgh",
 					},
 				},
 			},
@@ -1194,19 +1490,19 @@ func Test_parseAdditionalDataFieldTemplate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := parseAdditionalDataFieldTemplate(tt.args.payload)
+			got, err := ParseAdditionalDataFieldTemplate(tt.args.payload)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("parseAdditionalDataFieldTemplate() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ParseAdditionalDataFieldTemplate() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("parseAdditionalDataFieldTemplate() = %v, want %v", got, tt.want)
+				t.Errorf("ParseAdditionalDataFieldTemplate() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestAdditionalDataFieldTemplate_Stringify(t *testing.T) {
+func TestAdditionalDataFieldTemplate_GeneratePayload(t *testing.T) {
 	type fields struct {
 		BillNumber                    string
 		MobileNumber                  string
@@ -1218,7 +1514,7 @@ func TestAdditionalDataFieldTemplate_Stringify(t *testing.T) {
 		PurposeTransaction            string
 		AdditionalConsumerDataRequest string
 		RFUforEMVCo                   map[ID]*RFUforEMVCo
-		PaymentSystemSpecific         map[ID]*PaymentSystemSpecificTemplate
+		PaymentSystemSpecific         map[ID]*PaymentSystemSpecific
 	}
 	tests := []struct {
 		name   string
@@ -1291,12 +1587,9 @@ func TestAdditionalDataFieldTemplate_Stringify(t *testing.T) {
 		{
 			name: "stringify payment system specific",
 			fields: fields{
-				PaymentSystemSpecific: map[ID]*PaymentSystemSpecificTemplate{
-					ID("50"): &PaymentSystemSpecificTemplate{
-						GloballyUniqueIdentifier: "hoge",
-						PaymentSystemSpecific: map[ID]*PaymentSystemSpecific{
-							ID("01"): &PaymentSystemSpecific{Value: "abcd"},
-						},
+				PaymentSystemSpecific: map[ID]*PaymentSystemSpecific{
+					ID("50"): &PaymentSystemSpecific{
+						Value: "0004hoge0104abcd",
 					},
 				},
 			},
@@ -1327,112 +1620,60 @@ func TestAdditionalDataFieldTemplate_Stringify(t *testing.T) {
 				RFUforEMVCo:                   tt.fields.RFUforEMVCo,
 				PaymentSystemSpecific:         tt.fields.PaymentSystemSpecific,
 			}
-			if got := c.Stringify(); got != tt.want {
-				t.Errorf("AdditionalDataFieldTemplate.Stringify() = %v, want %v", got, tt.want)
+			if got := c.GeneratePayload(); got != tt.want {
+				t.Errorf("AdditionalDataFieldTemplate.GeneratePayload() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_parsePaymentSystemSpecificTemplate(t *testing.T) {
-	type args struct {
-		payload string
+func TestAdditionalDataFieldTemplate_Validate(t *testing.T) {
+	type fields struct {
+		BillNumber                    string
+		MobileNumber                  string
+		StoreLabel                    string
+		LoyaltyNumber                 string
+		ReferenceLabel                string
+		CustomerLabel                 string
+		TerminalLabel                 string
+		PurposeTransaction            string
+		AdditionalConsumerDataRequest string
+		RFUforEMVCo                   map[ID]*RFUforEMVCo
+		PaymentSystemSpecific         map[ID]*PaymentSystemSpecific
 	}
 	tests := []struct {
 		name    string
-		args    args
-		want    *PaymentSystemSpecificTemplate
+		fields  fields
 		wantErr bool
 	}{
 		{
-			name: "empty payload",
-			args: args{
-				payload: "",
-			},
-			want:    &PaymentSystemSpecificTemplate{},
-			wantErr: false,
-		},
-		{
-			name: "id parse error",
-			args: args{
-				payload: "ab",
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "value parse error",
-			args: args{
-				payload: "00020",
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "parse global unique identifier",
-			args: args{
-				payload: "0006sample",
-			},
-			want: &PaymentSystemSpecificTemplate{
-				GloballyUniqueIdentifier: "sample",
-			},
+			fields:  fields{},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := parsePaymentSystemSpecificTemplate(tt.args.payload)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("parsePaymentSystemSpecificTemplate() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			c := &AdditionalDataFieldTemplate{
+				BillNumber:                    tt.fields.BillNumber,
+				MobileNumber:                  tt.fields.MobileNumber,
+				StoreLabel:                    tt.fields.StoreLabel,
+				LoyaltyNumber:                 tt.fields.LoyaltyNumber,
+				ReferenceLabel:                tt.fields.ReferenceLabel,
+				CustomerLabel:                 tt.fields.CustomerLabel,
+				TerminalLabel:                 tt.fields.TerminalLabel,
+				PurposeTransaction:            tt.fields.PurposeTransaction,
+				AdditionalConsumerDataRequest: tt.fields.AdditionalConsumerDataRequest,
+				RFUforEMVCo:                   tt.fields.RFUforEMVCo,
+				PaymentSystemSpecific:         tt.fields.PaymentSystemSpecific,
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("parsePaymentSystemSpecificTemplate() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-func TestPaymentSystemSpecificTemplate_Stringify(t *testing.T) {
-	type fields struct {
-		GloballyUniqueIdentifier string
-		PaymentSystemSpecific    map[ID]*PaymentSystemSpecific
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   string
-	}{
-		{
-			name: "stringify Global Unique Identifier",
-			fields: fields{
-				GloballyUniqueIdentifier: "sample",
-			},
-			want: "0006sample",
-		},
-		{
-			name: "stringify payment system specific",
-			fields: fields{
-				PaymentSystemSpecific: map[ID]*PaymentSystemSpecific{
-					ID("01"): &PaymentSystemSpecific{Value: "abcd"},
-				},
-			},
-			want: "0104abcd",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := &PaymentSystemSpecificTemplate{
-				GloballyUniqueIdentifier: tt.fields.GloballyUniqueIdentifier,
-				PaymentSystemSpecific:    tt.fields.PaymentSystemSpecific,
-			}
-			if got := c.Stringify(); got != tt.want {
-				t.Errorf("PaymentSystemSpecificTemplate.Stringify() = %v, want %v", got, tt.want)
+			if err := c.Validate(); (err != nil) != tt.wantErr {
+				t.Errorf("AdditionalDataFieldTemplate.Validate() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func Test_parsePaymentSystemSpecific(t *testing.T) {
+func Test_ParsePaymentSystemSpecific(t *testing.T) {
 	type args struct {
 		value string
 	}
@@ -1452,14 +1693,14 @@ func Test_parsePaymentSystemSpecific(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := parsePaymentSystemSpecific(tt.args.value); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("parsePaymentSystemSpecific() = %v, want %v", got, tt.want)
+			if got := ParsePaymentSystemSpecific(tt.args.value); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ParsePaymentSystemSpecific() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestPaymentSystemSpecific_Stringify(t *testing.T) {
+func TestPaymentSystemSpecific_GeneratePayload(t *testing.T) {
 	type fields struct {
 		Value string
 	}
@@ -1480,14 +1721,14 @@ func TestPaymentSystemSpecific_Stringify(t *testing.T) {
 			v := &PaymentSystemSpecific{
 				Value: tt.fields.Value,
 			}
-			if got := v.Stringify(); got != tt.want {
-				t.Errorf("PaymentSystemSpecific.Stringify() = %v, want %v", got, tt.want)
+			if got := v.GeneratePayload(); got != tt.want {
+				t.Errorf("PaymentSystemSpecific.GeneratePayload() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_parseMerchantInformationLanguageTemplate(t *testing.T) {
+func Test_ParseMerchantInformationLanguageTemplate(t *testing.T) {
 	type args struct {
 		payload string
 	}
@@ -1568,19 +1809,19 @@ func Test_parseMerchantInformationLanguageTemplate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := parseMerchantInformationLanguageTemplate(tt.args.payload)
+			got, err := ParseMerchantInformationLanguageTemplate(tt.args.payload)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("parseMerchantInformationLanguageTemplate() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ParseMerchantInformationLanguageTemplate() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("parseMerchantInformationLanguageTemplate() = %v, want %v", got, tt.want)
+				t.Errorf("ParseMerchantInformationLanguageTemplate() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestMerchantInformationLanguageTemplate_Stringify(t *testing.T) {
+func TestMerchantInformationLanguageTemplate_GeneratePayload(t *testing.T) {
 	type fields struct {
 		LanguagePreference string
 		MerchantName       string
@@ -1633,8 +1874,67 @@ func TestMerchantInformationLanguageTemplate_Stringify(t *testing.T) {
 				MerchantCity:       tt.fields.MerchantCity,
 				RFUForEMVCo:        tt.fields.RFUForEMVCo,
 			}
-			if got := c.Stringify(); got != tt.want {
-				t.Errorf("MerchantInformationLanguageTemplate.Stringify() = %v, want %v", got, tt.want)
+			if got := c.GeneratePayload(); got != tt.want {
+				t.Errorf("MerchantInformationLanguageTemplate.GeneratePayload() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMerchantInformationLanguageTemplate_Validate(t *testing.T) {
+	type fields struct {
+		LanguagePreference string
+		MerchantName       string
+		MerchantCity       string
+		RFUForEMVCo        map[ID]*RFUforEMVCo
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			name: "minumum ok",
+			fields: fields{
+				LanguagePreference: "JA",
+				MerchantName:       "sample",
+			},
+			wantErr: false,
+		},
+		{
+			name:    "lack of LanguagePreference",
+			fields:  fields{},
+			wantErr: true,
+		},
+		{
+			name: "lack of MechantName",
+			fields: fields{
+				LanguagePreference: "JA",
+			},
+			wantErr: true,
+		},
+		{
+			name: "exist RFU for EMVCo",
+			fields: fields{
+				LanguagePreference: "JA",
+				MerchantName:       "sample",
+				RFUForEMVCo: map[ID]*RFUforEMVCo{
+					ID("99"): &RFUforEMVCo{},
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &MerchantInformationLanguageTemplate{
+				LanguagePreference: tt.fields.LanguagePreference,
+				MerchantName:       tt.fields.MerchantName,
+				MerchantCity:       tt.fields.MerchantCity,
+				RFUForEMVCo:        tt.fields.RFUForEMVCo,
+			}
+			if err := c.Validate(); (err != nil) != tt.wantErr {
+				t.Errorf("MerchantInformationLanguageTemplate.Validate() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

@@ -2,7 +2,7 @@ package mpm
 
 // Decode ...
 func Decode(payload string) (*EMVQR, error) {
-	emvqr, err := parseEMVQR(payload)
+	emvqr, err := ParseEMVQR(payload)
 	if err != nil {
 		return nil, err
 	}
@@ -17,5 +17,5 @@ func Encode(emvqr *EMVQR) (string, error) {
 	if err := emvqr.Validate(); err != nil {
 		return "", err
 	}
-	return emvqr.Stringify()
+	return emvqr.GeneratePayload()
 }
