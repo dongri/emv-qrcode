@@ -22,19 +22,17 @@ func main() {
 	emvqr := new(mpm.EMVQR)
 	emvqr.PayloadFormatIndicator = "01"
 	emvqr.PointOfInitiationMethod = "12" // 11 is static qrcode
-	var merchantAccountInformations []mpm.MerchantAccountInformation
+	merchantAccountInformations := make(map[mpm.ID]*mpm.MerchantAccountInformation)
 	merchantAccountInformationMaster := new(mpm.MerchantAccountInformation)
-	merchantAccountInformationMaster.Tag = "04"
 	merchantAccountInformationMaster.Value = "MASTER1234567890"
-	merchantAccountInformations = append(merchantAccountInformations, *merchantAccountInformationMaster)
+	merchantAccountInformations[mpm.ID("04")] = merchantAccountInformationMaster
 	merchantAccountInformationJCB := new(mpm.MerchantAccountInformation)
-	merchantAccountInformationJCB.Tag = "13"
 	merchantAccountInformationJCB.Value = "JCB1234567890"
-	merchantAccountInformations = append(merchantAccountInformations, *merchantAccountInformationJCB)
+	merchantAccountInformations[mpm.ID("13")] = merchantAccountInformationJCB
 	emvqr.MerchantAccountInformation = merchantAccountInformations
 	emvqr.MerchantCategoryCode = "5311"
 	emvqr.TransactionCurrency = "392"
-	emvqr.TransactionAmount = 999
+	emvqr.TransactionAmount = "999.123"
 	emvqr.CountryCode = "JP"
 	emvqr.MerchantName = "DONGRI"
 	emvqr.MerchantCity = "TOKYO"
@@ -42,17 +40,17 @@ func main() {
 	additionalTemplate.BillNumber = "hoge"
 	additionalTemplate.ReferenceLabel = "fuga"
 	additionalTemplate.TerminalLabel = "piyo"
-	emvqr.AdditionalDataFieldTemplate = *additionalTemplate
-	mpmQRCode, err := emvqr.GeneratePayload()
+	emvqr.AdditionalDataFieldTemplate = additionalTemplate
+	mpmQRCode, err := mpm.Encode(emvqr)
 	if err != nil {
 		log.Println(err.Error())
 		return
 	}
 	log.Println(mpmQRCode)
-	// 0002010102121516ABCDEF123456789052045311530339254039995802JP5906DONGRI6005TOKYO62240104hoge0504fuga0704piyo63043FE6
+	// 0002010102121313JCB12345678900416MASTER12345678905204531153033925407999.1235802JP5906DONGRI6005TOKYO62240104hoge0504fuga0704piyo6304C343
 
 	// MPM Parse
-	emvQR, err := mpm.ParsePayload("00020101021229300012D156000000000510A93FO3230Q31280012D15600000001030812345678520441115802CN5914BEST TRANSPORT6007BEIJING64200002ZH0104最佳运输0202北京540523.7253031565502016233030412340603***0708A60086670902ME91320016A0112233449988770708123456786304A13A")
+	emvQR, err := mpm.Decode("00020101021229300012D156000000000510A93FO3230Q31280012D15600000001030812345678520441115802CN5914BEST TRANSPORT6007BEIJING64200002ZH0104最佳运输0202北京540523.7253031565502016233030412340603***0708A60086670902ME91320016A0112233449988770708123456786304A13A")
 	if err != nil {
 		log.Println(err)
 		return
