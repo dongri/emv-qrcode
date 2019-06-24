@@ -7,6 +7,7 @@ import (
 	"unicode/utf8"
 )
 
+// ParserError ...
 type ParserError struct {
 	Func string
 	Err  error
@@ -44,11 +45,13 @@ func idRangeError(fn string, id ID) *ParserError {
 	}
 }
 
+// const ...
 const (
 	IDWordCount          = 2
 	ValueLengthWordCount = 2
 )
 
+// Parser ...
 type Parser struct {
 	current int64
 	max     int64
@@ -56,6 +59,7 @@ type Parser struct {
 	err     error
 }
 
+// NewParser ...
 func NewParser(payload string) *Parser {
 	return &Parser{
 		current: -1,
@@ -65,6 +69,7 @@ func NewParser(payload string) *Parser {
 	}
 }
 
+// Next ...
 func (p *Parser) Next() bool {
 	if p.err != nil {
 		return false
@@ -84,6 +89,7 @@ func (p *Parser) Next() bool {
 	return true
 }
 
+// ID ...
 func (p *Parser) ID() ID {
 	const fnID = "ID"
 	start := p.current
@@ -100,6 +106,7 @@ func (p *Parser) ID() ID {
 	return id
 }
 
+// ValueLength ...
 func (p *Parser) ValueLength() int64 {
 	const fnValueLength = "ValueLength"
 	start := p.current + IDWordCount
@@ -121,6 +128,7 @@ func (p *Parser) ValueLength() int64 {
 	return len
 }
 
+// Value ...
 func (p *Parser) Value() string {
 	const fnValue = "Value"
 	start := p.current + IDWordCount + ValueLengthWordCount
@@ -136,6 +144,7 @@ func (p *Parser) Value() string {
 	return string(p.source[start:end])
 }
 
+// Err ...
 func (p *Parser) Err() error {
 	return p.err
 }

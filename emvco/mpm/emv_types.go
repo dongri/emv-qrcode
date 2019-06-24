@@ -45,6 +45,7 @@ func (id ID) Between(start ID, end ID) (bool, error) {
 	return idNum >= startNum && idNum <= endNum, nil
 }
 
+// const ...
 const (
 	IDPayloadFormatIndicator               ID = "00" // (M) Payload Format Indicator
 	IDPointOfInitiationMethod              ID = "01" // (O) Point of Initiation Method
@@ -186,7 +187,7 @@ func ParseEMVQR(payload string) (*EMVQR, error) {
 	return emvqr, nil
 }
 
-// GeneratePayload
+// GeneratePayload ...
 func (c *EMVQR) GeneratePayload() (string, error) {
 	s := ""
 	s += format(IDPayloadFormatIndicator, c.PayloadFormatIndicator)
@@ -248,6 +249,7 @@ func (c *EMVQR) GeneratePayload() (string, error) {
 	return s, nil
 }
 
+// Validate ...
 func (c *EMVQR) Validate() error {
 	// check mandatory
 	if c.PayloadFormatIndicator == "" {
@@ -335,7 +337,7 @@ func (c PointOfInitiationMethod) IsDynamicMethod() bool {
 	return c == PointOfInitiationMethodDynamic
 }
 
-// Validate
+// Validate ...
 func (c PointOfInitiationMethod) Validate() error {
 	if !c.IsStaticMethod() && !c.IsDynamicMethod() {
 		return fmt.Errorf("PointOfInitiationMethod should be \"11\" or \"12\", PointOfInitiationMethod: %s", c)
@@ -404,7 +406,7 @@ func (c *MerchantAccountInformation) GeneratePayload() string {
 	return c.Value
 }
 
-// GeneratePayload ...
+// Validate ...
 func (c *MerchantAccountInformation) Validate() error {
 	return nil
 }
@@ -441,6 +443,7 @@ type AdditionalDataFieldTemplate struct {
 	PaymentSystemSpecific         map[ID]*PaymentSystemSpecific
 }
 
+// ParseAdditionalDataFieldTemplate ...
 func ParseAdditionalDataFieldTemplate(payload string) (*AdditionalDataFieldTemplate, error) {
 	p := NewParser(payload)
 	additionalDataFieldTemplate := &AdditionalDataFieldTemplate{}
