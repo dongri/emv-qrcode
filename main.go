@@ -11,32 +11,35 @@ func main() {
 
 	// MPM Generate
 	emvqr := new(mpm.EMVQR)
-	emvqr.PayloadFormatIndicator = "01"
-	emvqr.PointOfInitiationMethod = "12" // 11 is static qrcode
-	merchantAccountInformations := make(map[mpm.ID]*mpm.MerchantAccountInformation)
-	merchantAccountInformationMaster := new(mpm.MerchantAccountInformation)
-	merchantAccountInformationMaster.Value = "MASTER1234567890"
-	merchantAccountInformations[mpm.ID("04")] = merchantAccountInformationMaster
-	merchantAccountInformationJCB := new(mpm.MerchantAccountInformation)
-	merchantAccountInformationJCB.Value = "JCB1234567890"
-	merchantAccountInformations[mpm.ID("13")] = merchantAccountInformationJCB
-	emvqr.MerchantAccountInformation = merchantAccountInformations
-	emvqr.MerchantCategoryCode = "5311"
-	emvqr.TransactionCurrency = "392"
-	emvqr.TransactionAmount = "999.123"
-	emvqr.CountryCode = "JP"
-	emvqr.MerchantName = "DONGRI"
-	emvqr.MerchantCity = "TOKYO"
+	emvqr.SetPayloadFormatIndicator("01")
+	emvqr.SetPointOfInitiationMethod("12") // 11 is static qrcode
+	// merchantAccountInformations := make(map[mpm.ID]*mpm.MerchantAccountInformation)
+	// merchantAccountInformationMaster := new(mpm.MerchantAccountInformation)
+	// merchantAccountInformationMaster.Value = "MASTER1234567890"
+	// merchantAccountInformations[mpm.ID("04")] = merchantAccountInformationMaster
+	// merchantAccountInformationJCB := new(mpm.MerchantAccountInformation)
+	// merchantAccountInformationJCB.Value = "JCB1234567890"
+	// merchantAccountInformations[mpm.ID("13")] = merchantAccountInformationJCB
+	// emvqr.MerchantAccountInformation = merchantAccountInformations
+	emvqr.AddMerchantAccountInformation("13", "JCB1234567890")
+	emvqr.AddMerchantAccountInformation("04", "MASTER1234567890")
+
+	emvqr.SetMerchantCategoryCode("5311")
+	emvqr.SetTransactionCurrency("392")
+	emvqr.SetTransactionAmount("999.123")
+	emvqr.SetCountryCode("JP")
+	emvqr.SetMerchantName("DONGRI")
+	emvqr.SetMerchantCity("TOKYO")
 	additionalTemplate := new(mpm.AdditionalDataFieldTemplate)
-	additionalTemplate.BillNumber = "hoge"
-	additionalTemplate.ReferenceLabel = "fuga"
-	additionalTemplate.TerminalLabel = "piyo"
-	emvqr.AdditionalDataFieldTemplate = additionalTemplate
-	mpmQRCode, err := mpm.Encode(emvqr)
-	if err != nil {
-		log.Println(err.Error())
-		return
-	}
+	additionalTemplate.SetBillNumber("hoge")
+	additionalTemplate.SetReferenceLabel("fuga")
+	additionalTemplate.SetTerminalLabel("piyo")
+	emvqr.SetAdditionalDataFieldTemplate(additionalTemplate)
+	mpmQRCode := mpm.Encode(emvqr)
+	// if err != nil {
+	// 	log.Println(err.Error())
+	// 	return
+	// }
 	log.Println(mpmQRCode)
 	// 0002010102121313JCB12345678900416MASTER12345678905204531153033925407999.1235802JP5906DONGRI6005TOKYO62240104hoge0504fuga0704piyo6304C343
 
