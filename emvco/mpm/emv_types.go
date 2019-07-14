@@ -71,6 +71,20 @@ const (
 	MerchantInformationIDRFUforEMVCoRangeEnd   ID = "99" // (O) 03-99 RFU for EMVCo
 )
 
+// Data Object ID Allocation in Merchant Account Information Template ...
+const (
+	UnreservedTemplateIDGloballyUniqueIdentifier ID = "00"
+	UnreservedTemplateIDContextSpecificDataStart ID = "01" // (O) 03-99 RFU for EMVCo
+	UnreservedTemplateIDContextSpecificDataEnd   ID = "99" // (O) 03-99 RFU for EMVCo
+)
+
+const (
+	// PointOfInitiationMethodStatic ...
+	PointOfInitiationMethodStatic = "11"
+	// PointOfInitiationMethodDynamic ...
+	PointOfInitiationMethodDynamic = "12"
+)
+
 // EMVQR ...
 type EMVQR struct {
 	PayloadFormatIndicator              TLV                                  `json:"Payload Format Indicator"`
@@ -90,7 +104,7 @@ type EMVQR struct {
 	CRC                                 TLV                                  `json:"CRC"`
 	MerchantInformationLanguageTemplate *MerchantInformationLanguageTemplate `json:"Merchant Information - Language Template"`
 	RFUforEMVCo                         []TLV                                `json:"RFU for EMVCo"`
-	UnreservedTemplates                 []TLV                                `json:"Unreserved Templates"`
+	UnreservedTemplates                 map[ID]UnreservedTemplateTLV         `json:"Unreserved Templates"`
 }
 
 // MerchantAccountInformationTLV ...
@@ -127,6 +141,19 @@ type MerchantInformationLanguageTemplate struct {
 	MerchantName       TLV   `json:"Merchant Name"`
 	MerchantCity       TLV   `json:"Merchant City"`
 	RFUforEMVCo        []TLV `json:"RFU for EMVCo"`
+}
+
+// UnreservedTemplateTLV ...
+type UnreservedTemplateTLV struct {
+	Tag    ID
+	Length string
+	Value  *UnreservedTemplate
+}
+
+// UnreservedTemplate ...
+type UnreservedTemplate struct {
+	GloballyUniqueIdentifier TLV `json:"Globally Unique Identifier"`
+	ContextSpecificData      TLV `json:"Context Specific Data"`
 }
 
 // ID ...
@@ -214,16 +241,15 @@ func (c *EMVQR) BinaryData() string {
 	s += c.MerchantName.BinaryData(indent)
 	s += c.MerchantCity.BinaryData(indent)
 	s += c.PostalCode.BinaryData(indent)
-	s += c.AdditionalDataFieldTemplate.BinaryData()
-	s += c.MerchantInformationLanguageTemplate.BinaryData()
+	s += c.AdditionalDataFieldTemplate.BinaryData(" ")
+	s += c.MerchantInformationLanguageTemplate.BinaryData(" ")
 	for _, r := range c.RFUforEMVCo {
-		s += r.BinaryData(indent)
+		s += r.BinaryData(" ")
 	}
 	for _, u := range c.UnreservedTemplates {
-		s += u.BinaryData(indent)
+		s += u.BinaryData(" ")
 	}
-	// s += formatCrc(s)
-	s += c.CRC.Tag.String() + " " + c.CRC.Length + " " + c.CRC.Value
+	s += c.CRC.BinaryData(indent)
 	return s
 }
 
@@ -391,13 +417,16 @@ func (c *EMVQR) AddRFUforEMVCo(id ID, v string) {
 }
 
 // AddUnreservedTemplates ...
-func (c *EMVQR) AddUnreservedTemplates(id ID, v string) {
-	tlv := TLV{
+func (c *EMVQR) AddUnreservedTemplates(id ID, v *UnreservedTemplate) {
+	tlv := UnreservedTemplateTLV{
 		Tag:    id,
-		Length: l(v),
+		Length: l(v.String()),
 		Value:  v,
 	}
-	c.UnreservedTemplates = append(c.UnreservedTemplates, tlv)
+	if c.UnreservedTemplates == nil {
+		c.UnreservedTemplates = make(map[ID]UnreservedTemplateTLV)
+	}
+	c.UnreservedTemplates[id] = tlv
 }
 
 // MerchantAccountInformation //
@@ -580,8 +609,7 @@ func (s AdditionalDataFieldTemplate) String() string {
 }
 
 // BinaryData ...
-func (s AdditionalDataFieldTemplate) BinaryData() string {
-	indent := " "
+func (s AdditionalDataFieldTemplate) BinaryData(indent string) string {
 	t := ""
 	t += s.BillNumber.BinaryData(indent)
 	t += s.MobileNumber.BinaryData(indent)
@@ -661,8 +689,7 @@ func (s *MerchantInformationLanguageTemplate) String() string {
 }
 
 // BinaryData ...
-func (s *MerchantInformationLanguageTemplate) BinaryData() string {
-	indent := " "
+func (s *MerchantInformationLanguageTemplate) BinaryData(indent string) string {
 	t := ""
 	t += s.LanguagePreference.BinaryData(indent)
 	t += s.MerchantName.BinaryData(indent)
@@ -672,6 +699,51 @@ func (s *MerchantInformationLanguageTemplate) BinaryData() string {
 	}
 	tt := IDMerchantInformationLanguageTemplate.String() + " " + ll(s.String()) + "\n" + t
 	return tt
+}
+
+// MerchantAccountInformation //
+
+func (s *UnreservedTemplateTLV) String() string {
+	t := ""
+	t += s.Tag.String() + s.Length + s.Value.String()
+	return t
+}
+
+// BinaryData ..
+func (s *UnreservedTemplateTLV) BinaryData(indent string) string {
+	return s.Tag.String() + " " + s.Length + "\n" + s.Value.BinaryData(indent)
+}
+
+// SetGloballyUniqueIdentifier ...
+func (s *UnreservedTemplate) SetGloballyUniqueIdentifier(v string) {
+	tlv := TLV{
+		Tag:    UnreservedTemplateIDGloballyUniqueIdentifier,
+		Length: l(v),
+		Value:  v,
+	}
+	s.GloballyUniqueIdentifier = tlv
+}
+
+// SetContextSpecificData ...
+func (s *UnreservedTemplate) SetContextSpecificData(id ID, v string) {
+	tlv := TLV{
+		Tag:    id,
+		Length: l(v),
+		Value:  v,
+	}
+	s.ContextSpecificData = tlv
+}
+
+func (s *UnreservedTemplate) String() string {
+	t := ""
+	t += s.GloballyUniqueIdentifier.String()
+	t += s.ContextSpecificData.String()
+	return t
+}
+
+// BinaryData ...
+func (s *UnreservedTemplate) BinaryData(indent string) string {
+	return indent + s.GloballyUniqueIdentifier.BinaryData(indent) + indent + s.ContextSpecificData.BinaryData(indent)
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -786,7 +858,11 @@ func ParseEMVQR(payload string) (*EMVQR, error) {
 				return nil, err
 			}
 			if within {
-				emvqr.AddUnreservedTemplates(id, value)
+				t, err := ParseUnreservedTemplate(value)
+				if err != nil {
+					return nil, err
+				}
+				emvqr.AddUnreservedTemplates(id, t)
 				continue
 			}
 		}
@@ -834,13 +910,6 @@ func (c *EMVQR) Validate() error {
 	}
 	return nil
 }
-
-const (
-	// PointOfInitiationMethodStatic ...
-	PointOfInitiationMethodStatic = "11"
-	// PointOfInitiationMethodDynamic ...
-	PointOfInitiationMethodDynamic = "12"
-)
 
 // ParseAdditionalDataFieldTemplate ...
 func ParseAdditionalDataFieldTemplate(payload string) (*AdditionalDataFieldTemplate, error) {
@@ -964,6 +1033,37 @@ func ParseMerchantInformationLanguageTemplate(value string) (*MerchantInformatio
 		return nil, err
 	}
 	return merchantInformationLanguageTemplate, nil
+}
+
+// ParseUnreservedTemplate ...
+func ParseUnreservedTemplate(value string) (*UnreservedTemplate, error) {
+	p := NewParser(value)
+	unreservedTemplate := &UnreservedTemplate{}
+	for p.Next() {
+		id := p.ID()
+		value := p.Value()
+		switch id {
+		case UnreservedTemplateIDGloballyUniqueIdentifier:
+			unreservedTemplate.SetGloballyUniqueIdentifier(value)
+		default:
+			var (
+				within bool
+				err    error
+			)
+			within, err = id.Between(UnreservedTemplateIDContextSpecificDataStart, UnreservedTemplateIDContextSpecificDataEnd)
+			if err != nil {
+				return nil, err
+			}
+			if within {
+				unreservedTemplate.SetContextSpecificData(id, value)
+				continue
+			}
+		}
+	}
+	if err := p.Err(); err != nil {
+		return nil, err
+	}
+	return unreservedTemplate, nil
 }
 
 // Validate ...
