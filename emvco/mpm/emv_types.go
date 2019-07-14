@@ -432,6 +432,9 @@ func (c *EMVQR) AddUnreservedTemplates(id ID, v *UnreservedTemplate) {
 // MerchantAccountInformation //
 
 func (s *MerchantAccountInformationTLV) String() string {
+	if s == nil {
+		return ""
+	}
 	t := ""
 	t += s.Tag.String() + s.Length + s.Value.String()
 	return t
@@ -439,6 +442,9 @@ func (s *MerchantAccountInformationTLV) String() string {
 
 // BinaryData ..
 func (s *MerchantAccountInformationTLV) BinaryData(indent string) string {
+	if s == nil {
+		return ""
+	}
 	return s.Tag.String() + " " + s.Length + "\n" + s.Value.BinaryData(indent)
 }
 
@@ -463,6 +469,9 @@ func (s *MerchantAccountInformation) SetPaymentNetworkSpecific(id ID, v string) 
 }
 
 func (s *MerchantAccountInformation) String() string {
+	if s == nil {
+		return ""
+	}
 	t := ""
 	t += s.GloballyUniqueIdentifier.String()
 	t += s.PaymentNetworkSpecific.String()
@@ -471,6 +480,9 @@ func (s *MerchantAccountInformation) String() string {
 
 // BinaryData ...
 func (s *MerchantAccountInformation) BinaryData(indent string) string {
+	if s == nil {
+		return ""
+	}
 	return indent + s.GloballyUniqueIdentifier.BinaryData(indent) + indent + s.PaymentNetworkSpecific.BinaryData(indent)
 }
 
@@ -587,7 +599,10 @@ func (s *AdditionalDataFieldTemplate) AddPaymentSystemSpecific(id ID, v string) 
 }
 
 // SetPaymentSystemSpecific ...
-func (s AdditionalDataFieldTemplate) String() string {
+func (s *AdditionalDataFieldTemplate) String() string {
+	if s == nil {
+		return ""
+	}
 	t := ""
 	t += s.BillNumber.String()
 	t += s.MobileNumber.String()
@@ -609,7 +624,10 @@ func (s AdditionalDataFieldTemplate) String() string {
 }
 
 // BinaryData ...
-func (s AdditionalDataFieldTemplate) BinaryData(indent string) string {
+func (s *AdditionalDataFieldTemplate) BinaryData(indent string) string {
+	if s == nil {
+		return ""
+	}
 	t := ""
 	t += s.BillNumber.BinaryData(indent)
 	t += s.MobileNumber.BinaryData(indent)
@@ -674,22 +692,25 @@ func (s *MerchantInformationLanguageTemplate) AddRFUForEMVCo(id ID, v string) {
 
 // String() ...
 func (s *MerchantInformationLanguageTemplate) String() string {
-	t := ""
-	if s != nil {
-		t += s.LanguagePreference.String()
-		t += s.MerchantName.String()
-		t += s.MerchantCity.String()
-		for _, r := range s.RFUforEMVCo {
-			t += r.String()
-		}
-		tt := format(IDMerchantInformationLanguageTemplate, t)
-		return tt
+	if s == nil {
+		return ""
 	}
-	return ""
+	t := ""
+	t += s.LanguagePreference.String()
+	t += s.MerchantName.String()
+	t += s.MerchantCity.String()
+	for _, r := range s.RFUforEMVCo {
+		t += r.String()
+	}
+	t = format(IDMerchantInformationLanguageTemplate, t)
+	return t
 }
 
 // BinaryData ...
 func (s *MerchantInformationLanguageTemplate) BinaryData(indent string) string {
+	if s == nil {
+		return ""
+	}
 	t := ""
 	t += s.LanguagePreference.BinaryData(indent)
 	t += s.MerchantName.BinaryData(indent)
@@ -697,13 +718,16 @@ func (s *MerchantInformationLanguageTemplate) BinaryData(indent string) string {
 	for _, r := range s.RFUforEMVCo {
 		t += r.BinaryData(indent)
 	}
-	tt := IDMerchantInformationLanguageTemplate.String() + " " + ll(s.String()) + "\n" + t
-	return tt
+	t = IDMerchantInformationLanguageTemplate.String() + " " + ll(s.String()) + "\n" + t
+	return t
 }
 
 // MerchantAccountInformation //
 
 func (s *UnreservedTemplateTLV) String() string {
+	if s == nil {
+		return ""
+	}
 	t := ""
 	t += s.Tag.String() + s.Length + s.Value.String()
 	return t
@@ -711,6 +735,9 @@ func (s *UnreservedTemplateTLV) String() string {
 
 // BinaryData ..
 func (s *UnreservedTemplateTLV) BinaryData(indent string) string {
+	if s == nil {
+		return ""
+	}
 	return s.Tag.String() + " " + s.Length + "\n" + s.Value.BinaryData(indent)
 }
 
@@ -735,6 +762,9 @@ func (s *UnreservedTemplate) SetContextSpecificData(id ID, v string) {
 }
 
 func (s *UnreservedTemplate) String() string {
+	if s == nil {
+		return ""
+	}
 	t := ""
 	t += s.GloballyUniqueIdentifier.String()
 	t += s.ContextSpecificData.String()
@@ -743,6 +773,9 @@ func (s *UnreservedTemplate) String() string {
 
 // BinaryData ...
 func (s *UnreservedTemplate) BinaryData(indent string) string {
+	if s == nil {
+		return ""
+	}
 	return indent + s.GloballyUniqueIdentifier.BinaryData(indent) + indent + s.ContextSpecificData.BinaryData(indent)
 }
 
