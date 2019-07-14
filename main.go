@@ -13,16 +13,15 @@ func main() {
 	emvqr := new(mpm.EMVQR)
 	emvqr.SetPayloadFormatIndicator("01")
 	emvqr.SetPointOfInitiationMethod("12") // 11 is static qrcode
-	// merchantAccountInformations := make(map[mpm.ID]*mpm.MerchantAccountInformation)
-	// merchantAccountInformationMaster := new(mpm.MerchantAccountInformation)
-	// merchantAccountInformationMaster.Value = "MASTER1234567890"
-	// merchantAccountInformations[mpm.ID("04")] = merchantAccountInformationMaster
-	// merchantAccountInformationJCB := new(mpm.MerchantAccountInformation)
-	// merchantAccountInformationJCB.Value = "JCB1234567890"
-	// merchantAccountInformations[mpm.ID("13")] = merchantAccountInformationJCB
-	// emvqr.MerchantAccountInformation = merchantAccountInformations
-	emvqr.AddMerchantAccountInformation("13", "JCB1234567890")
-	emvqr.AddMerchantAccountInformation("04", "MASTER1234567890")
+	merchantAccountInformationJCB := new(mpm.MerchantAccountInformation)
+	merchantAccountInformationJCB.SetGloballyUniqueIdentifier("D123456")
+	merchantAccountInformationJCB.SetPaymentNetworkSpecific("13", "JCB1234567890")
+	emvqr.AddMerchantAccountInformation(mpm.ID("29"), merchantAccountInformationJCB)
+
+	merchantAccountInformationMaster := new(mpm.MerchantAccountInformation)
+	merchantAccountInformationMaster.SetGloballyUniqueIdentifier("M123456")
+	merchantAccountInformationMaster.SetPaymentNetworkSpecific("04", "MASTER1234567890")
+	emvqr.AddMerchantAccountInformation(mpm.ID("31"), merchantAccountInformationMaster)
 
 	emvqr.SetMerchantCategoryCode("5311")
 	emvqr.SetTransactionCurrency("392")
@@ -35,11 +34,11 @@ func main() {
 	additionalTemplate.SetReferenceLabel("fuga")
 	additionalTemplate.SetTerminalLabel("piyo")
 	emvqr.SetAdditionalDataFieldTemplate(additionalTemplate)
-	mpmQRCode := mpm.Encode(emvqr)
-	// if err != nil {
-	// 	log.Println(err.Error())
-	// 	return
-	// }
+	mpmQRCode, err := mpm.Encode(emvqr)
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
 	log.Println(mpmQRCode)
 	// 0002010102121313JCB12345678900416MASTER12345678905204531153033925407999.1235802JP5906DONGRI6005TOKYO62240104hoge0504fuga0704piyo6304C343
 
@@ -50,7 +49,12 @@ func main() {
 		return
 	}
 	log.Println(emvQR)
-	log.Println(emvQR.MerchantAccountInformation)
+
+	binary := emvQR.BinaryData()
+	log.Println("\n" + binary)
+
+	json := emvQR.JSON()
+	log.Println(json)
 
 	// CPM
 	qr := new(cpm.EMVQR)
