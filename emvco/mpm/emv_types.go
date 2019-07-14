@@ -156,6 +156,15 @@ type UnreservedTemplate struct {
 	ContextSpecificData      TLV `json:"Context Specific Data"`
 }
 
+// DataType ...
+type DataType string
+
+// const ...
+const (
+	DataTypeBinary DataType = "binary"
+	DataTypeRaw    DataType = "raw"
+)
+
 // ID ...
 type ID string
 
@@ -205,15 +214,31 @@ func (tlv TLV) String() string {
 	return tlv.Tag.String() + tlv.Length + tlv.Value
 }
 
-// BinaryData ...
-func (tlv TLV) BinaryData(indent string) string {
+// DataWithType ...
+func (tlv TLV) DataWithType(dataType DataType, indent string) string {
 	if tlv.Value == "" {
 		return ""
 	}
-	rep := regexp.MustCompile("(.{2})")
-	hexStr := hex.EncodeToString([]byte(tlv.Value))
-	hexArray := rep.FindAllString(hexStr, -1)
-	return indent + tlv.Tag.String() + " " + tlv.Length + " " + strings.Join(hexArray, " ") + "\n"
+	if dataType == DataTypeBinary {
+		rep := regexp.MustCompile("(.{2})")
+		hexStr := hex.EncodeToString([]byte(tlv.Value))
+		hexArray := rep.FindAllString(hexStr, -1)
+		return indent + tlv.Tag.String() + " " + tlv.Length + " " + strings.Join(hexArray, " ") + "\n"
+	}
+	if dataType == DataTypeRaw {
+		return indent + tlv.Tag.String() + " " + tlv.Length + " " + tlv.Value + "\n"
+	}
+	return ""
+}
+
+// BinaryData ...
+func (c *EMVQR) BinaryData() string {
+	return c.dataWithType(DataTypeBinary)
+}
+
+// RawData ...
+func (c *EMVQR) RawData() string {
+	return c.dataWithType(DataTypeRaw)
 }
 
 // JSON ...
@@ -222,34 +247,33 @@ func (c *EMVQR) JSON() string {
 	return string(bytes)
 }
 
-// BinaryData ...
-func (c *EMVQR) BinaryData() string {
+func (c *EMVQR) dataWithType(dataType DataType) string {
 	indent := ""
 	s := ""
-	s += c.PayloadFormatIndicator.BinaryData(indent)
-	s += c.PointOfInitiationMethod.BinaryData(indent)
+	s += c.PayloadFormatIndicator.DataWithType(dataType, indent)
+	s += c.PointOfInitiationMethod.DataWithType(dataType, indent)
 	for _, m := range c.MerchantAccountInformation {
-		s += m.BinaryData(" ")
+		s += m.DataWithType(dataType, " ")
 	}
-	s += c.MerchantCategoryCode.BinaryData(indent)
-	s += c.TransactionCurrency.BinaryData(indent)
-	s += c.TransactionAmount.BinaryData(indent)
-	s += c.TipOrConvenienceIndicator.BinaryData(indent)
-	s += c.ValueOfConvenienceFeeFixed.BinaryData(indent)
-	s += c.ValueOfConvenienceFeePercentage.BinaryData(indent)
-	s += c.CountryCode.BinaryData(indent)
-	s += c.MerchantName.BinaryData(indent)
-	s += c.MerchantCity.BinaryData(indent)
-	s += c.PostalCode.BinaryData(indent)
-	s += c.AdditionalDataFieldTemplate.BinaryData(" ")
-	s += c.MerchantInformationLanguageTemplate.BinaryData(" ")
+	s += c.MerchantCategoryCode.DataWithType(dataType, indent)
+	s += c.TransactionCurrency.DataWithType(dataType, indent)
+	s += c.TransactionAmount.DataWithType(dataType, indent)
+	s += c.TipOrConvenienceIndicator.DataWithType(dataType, indent)
+	s += c.ValueOfConvenienceFeeFixed.DataWithType(dataType, indent)
+	s += c.ValueOfConvenienceFeePercentage.DataWithType(dataType, indent)
+	s += c.CountryCode.DataWithType(dataType, indent)
+	s += c.MerchantName.DataWithType(dataType, indent)
+	s += c.MerchantCity.DataWithType(dataType, indent)
+	s += c.PostalCode.DataWithType(dataType, indent)
+	s += c.AdditionalDataFieldTemplate.DataWithType(dataType, " ")
+	s += c.MerchantInformationLanguageTemplate.DataWithType(dataType, " ")
 	for _, r := range c.RFUforEMVCo {
-		s += r.BinaryData(" ")
+		s += r.DataWithType(dataType, " ")
 	}
 	for _, u := range c.UnreservedTemplates {
-		s += u.BinaryData(" ")
+		s += u.DataWithType(dataType, " ")
 	}
-	s += c.CRC.BinaryData(indent)
+	s += c.CRC.DataWithType(dataType, indent)
 	return s
 }
 
@@ -440,12 +464,12 @@ func (s *MerchantAccountInformationTLV) String() string {
 	return t
 }
 
-// BinaryData ..
-func (s *MerchantAccountInformationTLV) BinaryData(indent string) string {
+// DataWithType ..
+func (s *MerchantAccountInformationTLV) DataWithType(dataType DataType, indent string) string {
 	if s == nil {
 		return ""
 	}
-	return s.Tag.String() + " " + s.Length + "\n" + s.Value.BinaryData(indent)
+	return s.Tag.String() + " " + s.Length + "\n" + s.Value.DataWithType(dataType, indent)
 }
 
 // SetGloballyUniqueIdentifier ...
@@ -478,12 +502,12 @@ func (s *MerchantAccountInformation) String() string {
 	return t
 }
 
-// BinaryData ...
-func (s *MerchantAccountInformation) BinaryData(indent string) string {
+// DataWithType ...
+func (s *MerchantAccountInformation) DataWithType(dataType DataType, indent string) string {
 	if s == nil {
 		return ""
 	}
-	return indent + s.GloballyUniqueIdentifier.BinaryData(indent) + indent + s.PaymentNetworkSpecific.BinaryData(indent)
+	return indent + s.GloballyUniqueIdentifier.DataWithType(dataType, indent) + indent + s.PaymentNetworkSpecific.DataWithType(dataType, indent)
 }
 
 // AdditionalDataFieldTemplate //
@@ -623,26 +647,26 @@ func (s *AdditionalDataFieldTemplate) String() string {
 	return tt
 }
 
-// BinaryData ...
-func (s *AdditionalDataFieldTemplate) BinaryData(indent string) string {
+// DataWithType ...
+func (s *AdditionalDataFieldTemplate) DataWithType(dataType DataType, indent string) string {
 	if s == nil {
 		return ""
 	}
 	t := ""
-	t += s.BillNumber.BinaryData(indent)
-	t += s.MobileNumber.BinaryData(indent)
-	t += s.StoreLabel.BinaryData(indent)
-	t += s.LoyaltyNumber.BinaryData(indent)
-	t += s.ReferenceLabel.BinaryData(indent)
-	t += s.CustomerLabel.BinaryData(indent)
-	t += s.TerminalLabel.BinaryData(indent)
-	t += s.PurposeTransaction.BinaryData(indent)
-	t += s.AdditionalConsumerDataRequest.BinaryData(indent)
+	t += s.BillNumber.DataWithType(dataType, indent)
+	t += s.MobileNumber.DataWithType(dataType, indent)
+	t += s.StoreLabel.DataWithType(dataType, indent)
+	t += s.LoyaltyNumber.DataWithType(dataType, indent)
+	t += s.ReferenceLabel.DataWithType(dataType, indent)
+	t += s.CustomerLabel.DataWithType(dataType, indent)
+	t += s.TerminalLabel.DataWithType(dataType, indent)
+	t += s.PurposeTransaction.DataWithType(dataType, indent)
+	t += s.AdditionalConsumerDataRequest.DataWithType(dataType, indent)
 	for _, r := range s.RFUforEMVCo {
-		t += r.BinaryData(indent)
+		t += r.DataWithType(dataType, indent)
 	}
 	for _, p := range s.PaymentSystemSpecific {
-		t += p.BinaryData(indent)
+		t += p.DataWithType(dataType, indent)
 	}
 	tt := IDAdditionalDataFieldTemplate.String() + " " + ll(s.String()) + "\n" + t
 	return tt
@@ -706,17 +730,17 @@ func (s *MerchantInformationLanguageTemplate) String() string {
 	return t
 }
 
-// BinaryData ...
-func (s *MerchantInformationLanguageTemplate) BinaryData(indent string) string {
+// DataWithType ...
+func (s *MerchantInformationLanguageTemplate) DataWithType(dataType DataType, indent string) string {
 	if s == nil {
 		return ""
 	}
 	t := ""
-	t += s.LanguagePreference.BinaryData(indent)
-	t += s.MerchantName.BinaryData(indent)
-	t += s.MerchantCity.BinaryData(indent)
+	t += s.LanguagePreference.DataWithType(dataType, indent)
+	t += s.MerchantName.DataWithType(dataType, indent)
+	t += s.MerchantCity.DataWithType(dataType, indent)
 	for _, r := range s.RFUforEMVCo {
-		t += r.BinaryData(indent)
+		t += r.DataWithType(dataType, indent)
 	}
 	t = IDMerchantInformationLanguageTemplate.String() + " " + ll(s.String()) + "\n" + t
 	return t
@@ -733,12 +757,12 @@ func (s *UnreservedTemplateTLV) String() string {
 	return t
 }
 
-// BinaryData ..
-func (s *UnreservedTemplateTLV) BinaryData(indent string) string {
+// DataWithType ..
+func (s *UnreservedTemplateTLV) DataWithType(dataType DataType, indent string) string {
 	if s == nil {
 		return ""
 	}
-	return s.Tag.String() + " " + s.Length + "\n" + s.Value.BinaryData(indent)
+	return s.Tag.String() + " " + s.Length + "\n" + s.Value.DataWithType(dataType, indent)
 }
 
 // SetGloballyUniqueIdentifier ...
@@ -771,12 +795,12 @@ func (s *UnreservedTemplate) String() string {
 	return t
 }
 
-// BinaryData ...
-func (s *UnreservedTemplate) BinaryData(indent string) string {
+// DataWithType ...
+func (s *UnreservedTemplate) DataWithType(dataType DataType, indent string) string {
 	if s == nil {
 		return ""
 	}
-	return indent + s.GloballyUniqueIdentifier.BinaryData(indent) + indent + s.ContextSpecificData.BinaryData(indent)
+	return indent + s.GloballyUniqueIdentifier.DataWithType(dataType, indent) + indent + s.ContextSpecificData.DataWithType(dataType, indent)
 }
 
 //////////////////////////////////////////////////////////////////////////

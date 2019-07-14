@@ -50,6 +50,9 @@ func main() {
 	}
 	log.Println(emvqr)
 
+	raw := emvqr.RawData()
+	log.Println("\n" + raw)
+
 	binary := emvqr.BinaryData()
 	log.Println("\n" + binary)
 
