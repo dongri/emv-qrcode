@@ -116,8 +116,8 @@ type MerchantAccountInformationTLV struct {
 
 // MerchantAccountInformation ...
 type MerchantAccountInformation struct {
-	GloballyUniqueIdentifier TLV `json:"Globally Unique Identifier"`
-	PaymentNetworkSpecific   TLV `json:"Payment network specific"`
+	GloballyUniqueIdentifier TLV   `json:"Globally Unique Identifier"`
+	PaymentNetworkSpecific   []TLV `json:"Payment network specific"`
 }
 
 // AdditionalDataFieldTemplate ...
@@ -482,14 +482,14 @@ func (s *MerchantAccountInformation) SetGloballyUniqueIdentifier(v string) {
 	s.GloballyUniqueIdentifier = tlv
 }
 
-// SetPaymentNetworkSpecific ...
-func (s *MerchantAccountInformation) SetPaymentNetworkSpecific(id ID, v string) {
+// AddPaymentNetworkSpecific ...
+func (s *MerchantAccountInformation) AddPaymentNetworkSpecific(id ID, v string) {
 	tlv := TLV{
 		Tag:    id,
 		Length: l(v),
 		Value:  v,
 	}
-	s.PaymentNetworkSpecific = tlv
+	s.PaymentNetworkSpecific = append(s.PaymentNetworkSpecific, tlv)
 }
 
 func (s *MerchantAccountInformation) String() string {
@@ -498,7 +498,9 @@ func (s *MerchantAccountInformation) String() string {
 	}
 	t := ""
 	t += s.GloballyUniqueIdentifier.String()
-	t += s.PaymentNetworkSpecific.String()
+	for _, pns := range s.PaymentNetworkSpecific {
+		t += pns.String()
+	}
 	return t
 }
 
@@ -507,7 +509,11 @@ func (s *MerchantAccountInformation) DataWithType(dataType DataType, indent stri
 	if s == nil {
 		return ""
 	}
-	return indent + s.GloballyUniqueIdentifier.DataWithType(dataType, indent) + indent + s.PaymentNetworkSpecific.DataWithType(dataType, indent)
+	var pnsData string
+	for _, pns := range s.PaymentNetworkSpecific {
+		pnsData += indent + pns.DataWithType(dataType, indent)
+	}
+	return indent + s.GloballyUniqueIdentifier.DataWithType(dataType, indent) + pnsData
 }
 
 // AdditionalDataFieldTemplate //
@@ -1045,7 +1051,7 @@ func ParseMerchantAccountInformation(value string) (*MerchantAccountInformation,
 				return nil, err
 			}
 			if within {
-				merchantAccountInformation.SetPaymentNetworkSpecific(id, value)
+				merchantAccountInformation.AddPaymentNetworkSpecific(id, value)
 				continue
 			}
 		}

@@ -15,12 +15,12 @@ func main() {
 	emvqr.SetPointOfInitiationMethod("12") // 11 is static qrcode
 	merchantAccountInformationJCB := new(mpm.MerchantAccountInformation)
 	merchantAccountInformationJCB.SetGloballyUniqueIdentifier("D123456")
-	merchantAccountInformationJCB.SetPaymentNetworkSpecific("13", "JCB1234567890")
+	merchantAccountInformationJCB.AddPaymentNetworkSpecific("13", "JCB1234567890")
 	emvqr.AddMerchantAccountInformation(mpm.ID("29"), merchantAccountInformationJCB)
 
 	merchantAccountInformationMaster := new(mpm.MerchantAccountInformation)
 	merchantAccountInformationMaster.SetGloballyUniqueIdentifier("M123456")
-	merchantAccountInformationMaster.SetPaymentNetworkSpecific("04", "MASTER1234567890")
+	merchantAccountInformationMaster.AddPaymentNetworkSpecific("04", "MASTER1234567890")
 	emvqr.AddMerchantAccountInformation(mpm.ID("31"), merchantAccountInformationMaster)
 
 	emvqr.SetMerchantCategoryCode("5311")
