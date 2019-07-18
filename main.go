@@ -9,7 +9,7 @@ import (
 
 func main() {
 
-	// MPM Generate
+	// MPM Encode
 	emvqr := new(mpm.EMVQR)
 	emvqr.SetPayloadFormatIndicator("01")
 	emvqr.SetPointOfInitiationMethod("12") // 11 is static qrcode
@@ -39,10 +39,9 @@ func main() {
 		log.Println(err.Error())
 		return
 	}
-	log.Println(code)
-	// 0002010102121313JCB12345678900416MASTER12345678905204531153033925407999.1235802JP5906DONGRI6005TOKYO62240104hoge0504fuga0704piyo6304C343
+	log.Println(code) // 0002010102121313JCB12345678900416MASTER12345678905204531153033925407999.1235802JP5906DONGRI6005TOKYO62240104hoge0504fuga0704piyo6304C343
 
-	// MPM Parse
+	// MPM Decode
 	emvqr, err = mpm.Decode("00020101021229300012D156000000000510A93FO3230Q31280012D15600000001030812345678520441115802CN5914BEST TRANSPORT6007BEIJING64200002ZH0104最佳运输0202北京540523.7253031565502016233030412340603***0708A60086670902ME91320016A0112233449988770708123456786304A13A")
 	if err != nil {
 		log.Println(err)
@@ -50,12 +49,15 @@ func main() {
 	}
 	log.Println(emvqr)
 
+	// Print Raw Data
 	raw := emvqr.RawData()
 	log.Println("\n" + raw)
 
+	// Print Binary Data
 	binary := emvqr.BinaryData()
 	log.Println("\n" + binary)
 
+	// Print JSON
 	json := emvqr.JSON()
 	log.Println(json)
 
