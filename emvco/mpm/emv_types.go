@@ -628,7 +628,7 @@ func (s *AdditionalDataFieldTemplate) AddPaymentSystemSpecific(id ID, v string) 
 	s.PaymentSystemSpecific = append(s.PaymentSystemSpecific, tlv)
 }
 
-// SetPaymentSystemSpecific ...
+// Stirng ...
 func (s *AdditionalDataFieldTemplate) String() string {
 	if s == nil {
 		return ""
