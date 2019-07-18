@@ -152,8 +152,8 @@ type UnreservedTemplateTLV struct {
 
 // UnreservedTemplate ...
 type UnreservedTemplate struct {
-	GloballyUniqueIdentifier TLV `json:"Globally Unique Identifier"`
-	ContextSpecificData      TLV `json:"Context Specific Data"`
+	GloballyUniqueIdentifier TLV   `json:"Globally Unique Identifier"`
+	ContextSpecificData      []TLV `json:"Context Specific Data"`
 }
 
 // DataType ...
@@ -781,14 +781,15 @@ func (s *UnreservedTemplate) SetGloballyUniqueIdentifier(v string) {
 	s.GloballyUniqueIdentifier = tlv
 }
 
-// SetContextSpecificData ...
-func (s *UnreservedTemplate) SetContextSpecificData(id ID, v string) {
+// AddContextSpecificData ...
+func (s *UnreservedTemplate) AddContextSpecificData(id ID, v string) {
 	tlv := TLV{
 		Tag:    id,
 		Length: l(v),
 		Value:  v,
 	}
-	s.ContextSpecificData = tlv
+	s.ContextSpecificData = append(s.ContextSpecificData, tlv)
+
 }
 
 func (s *UnreservedTemplate) String() string {
@@ -797,7 +798,9 @@ func (s *UnreservedTemplate) String() string {
 	}
 	t := ""
 	t += s.GloballyUniqueIdentifier.String()
-	t += s.ContextSpecificData.String()
+	for _, c := range s.ContextSpecificData {
+		t += c.String()
+	}
 	return t
 }
 
@@ -806,7 +809,11 @@ func (s *UnreservedTemplate) DataWithType(dataType DataType, indent string) stri
 	if s == nil {
 		return ""
 	}
-	return indent + s.GloballyUniqueIdentifier.DataWithType(dataType, indent) + indent + s.ContextSpecificData.DataWithType(dataType, indent)
+	var csData string
+	for _, cs := range s.ContextSpecificData {
+		csData += indent + cs.DataWithType(dataType, indent)
+	}
+	return indent + s.GloballyUniqueIdentifier.DataWithType(dataType, indent) + csData
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1118,7 +1125,7 @@ func ParseUnreservedTemplate(value string) (*UnreservedTemplate, error) {
 				return nil, err
 			}
 			if within {
-				unreservedTemplate.SetContextSpecificData(id, value)
+				unreservedTemplate.AddContextSpecificData(id, value)
 				continue
 			}
 		}

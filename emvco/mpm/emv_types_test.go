@@ -420,20 +420,35 @@ func Test_ParseEMVQR(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 		},
-		// {
-		// 	name: "parse merchant account information",
-		// 	args: args{
-		// 		payload: "02160004hoge0104abcd",
-		// 	},
-		// 	want: &EMVQR{
-		// 		MerchantAccountInformation: map[ID]*MerchantAccountInformation{
-		// 			ID("02"): &MerchantAccountInformation{
-		// 				Value: "0004hoge0104abcd",
-		// 			},
-		// 		},
-		// 	},
-		// 	wantErr: false,
-		// },
+		{
+			name: "parse merchant account information",
+			args: args{
+				payload: "02160004hoge0104abcd",
+			},
+			want: &EMVQR{
+				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
+					ID("02"): MerchantAccountInformationTLV{
+						Tag:    "02",
+						Length: "16",
+						Value: &MerchantAccountInformation{
+							GloballyUniqueIdentifier: TLV{
+								Tag:    "00",
+								Length: "04",
+								Value:  "hoge",
+							},
+							PaymentNetworkSpecific: []TLV{
+								TLV{
+									Tag:    "01",
+									Length: "04",
+									Value:  "abcd",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
 		{
 			name: "parse failed merchant account information",
 			args: args{
@@ -442,85 +457,153 @@ func Test_ParseEMVQR(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 		},
-		// {
-		// 	name: "parse multiple merchant account information",
-		// 	args: args{
-		// 		payload: "02160004hoge0104abcd26160004fuga0204efgh",
-		// 	},
-		// 	want: &EMVQR{
-		// 		MerchantAccountInformation: map[ID]*MerchantAccountInformation{
-		// 			ID("02"): &MerchantAccountInformation{
-		// 				Value: "0004hoge0104abcd",
-		// 			},
-		// 			ID("26"): &MerchantAccountInformation{
-		// 				Value: "0004fuga0204efgh",
-		// 			},
-		// 		},
-		// 	},
-		// 	wantErr: false,
-		// },
-		// {
-		// 	name: "parse RFU for EMVCo",
-		// 	args: args{
-		// 		payload: "6504abcd",
-		// 	},
-		// 	want: &EMVQR{
-		// 		RFUforEMVCo: map[ID]*RFUforEMVCo{
-		// 			ID("65"): &RFUforEMVCo{
-		// 				Value: "abcd",
-		// 			},
-		// 		},
-		// 	},
-		// 	wantErr: false,
-		// },
-		// {
-		// 	name: "parse multiple RFU for EMVCo",
-		// 	args: args{
-		// 		payload: "6504abcd7904efgh",
-		// 	},
-		// 	want: &EMVQR{
-		// 		RFUforEMVCo: map[ID]*RFUforEMVCo{
-		// 			ID("65"): &RFUforEMVCo{
-		// 				Value: "abcd",
-		// 			},
-		// 			ID("79"): &RFUforEMVCo{
-		// 				Value: "efgh",
-		// 			},
-		// 		},
-		// 	},
-		// 	wantErr: false,
-		// },
-		// 	{
-		// 		name: "parse unreserved templates",
-		// 		args: args{
-		// 			payload: "8004abcd",
-		// 		},
-		// 		want: &EMVQR{
-		// 			UnreservedTemplates: map[ID]*UnreservedTemplate{
-		// 				ID("80"): &UnreservedTemplate{
-		// 					Value: "abcd",
-		// 				},
-		// 			},
-		// 		},
-		// 		wantErr: false,
-		// 	},
-		// 	{
-		// 		name: "parse multiple unreserved templates",
-		// 		args: args{
-		// 			payload: "8004abcd9904efgh",
-		// 		},
-		// 		want: &EMVQR{
-		// 			UnreservedTemplates: map[ID]*UnreservedTemplate{
-		// 				ID("80"): &UnreservedTemplate{
-		// 					Value: "abcd",
-		// 				},
-		// 				ID("99"): &UnreservedTemplate{
-		// 					Value: "efgh",
-		// 				},
-		// 			},
-		// 		},
-		// 		wantErr: false,
-		// 	},
+		{
+			name: "parse multiple merchant account information",
+			args: args{
+				payload: "02160004hoge0104abcd26160004fuga0204efgh",
+			},
+			want: &EMVQR{
+				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
+					ID("02"): MerchantAccountInformationTLV{
+						Tag:    "02",
+						Length: "16",
+						Value: &MerchantAccountInformation{
+							GloballyUniqueIdentifier: TLV{
+								Tag:    "00",
+								Length: "04",
+								Value:  "hoge",
+							},
+							PaymentNetworkSpecific: []TLV{
+								TLV{
+									Tag:    "01",
+									Length: "04",
+									Value:  "abcd",
+								},
+							},
+						},
+					},
+					ID("26"): MerchantAccountInformationTLV{
+						Tag:    "26",
+						Length: "16",
+						Value: &MerchantAccountInformation{
+							GloballyUniqueIdentifier: TLV{
+								Tag:    "00",
+								Length: "04",
+								Value:  "fuga",
+							},
+							PaymentNetworkSpecific: []TLV{
+								TLV{
+									Tag:    "02",
+									Length: "04",
+									Value:  "efgh",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "parse RFU for EMVCo",
+			args: args{
+				payload: "6504abcd",
+			},
+			want: &EMVQR{
+				RFUforEMVCo: []TLV{
+					TLV{
+						Tag:    "65",
+						Length: "04",
+						Value:  "abcd",
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "parse multiple RFU for EMVCo",
+			args: args{
+				payload: "6504abcd7904efgh",
+			},
+			want: &EMVQR{
+				RFUforEMVCo: []TLV{
+					TLV{
+						Tag:    "65",
+						Length: "04",
+						Value:  "abcd",
+					},
+					TLV{
+						Tag:    "79",
+						Length: "04",
+						Value:  "efgh",
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "parse unreserved templates",
+			args: args{
+				payload: "80160004hoge0104abcd",
+			},
+			want: &EMVQR{
+				UnreservedTemplates: map[ID]UnreservedTemplateTLV{
+					ID("80"): UnreservedTemplateTLV{
+						Tag:    "80",
+						Length: "16",
+						Value: &UnreservedTemplate{
+							GloballyUniqueIdentifier: TLV{
+								Tag:    "00",
+								Length: "04",
+								Value:  "hoge",
+							},
+							ContextSpecificData: []TLV{
+								TLV{
+									Tag:    "01",
+									Length: "04",
+									Value:  "abcd",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "parse multiple unreserved templates",
+			args: args{
+				payload: "80240004hoge0104abcd0204efgh",
+			},
+			want: &EMVQR{
+				UnreservedTemplates: map[ID]UnreservedTemplateTLV{
+					ID("80"): UnreservedTemplateTLV{
+						Tag:    "80",
+						Length: "24",
+						Value: &UnreservedTemplate{
+							GloballyUniqueIdentifier: TLV{
+								Tag:    "00",
+								Length: "04",
+								Value:  "hoge",
+							},
+							ContextSpecificData: []TLV{
+								TLV{
+									Tag:    "01",
+									Length: "04",
+									Value:  "abcd",
+								},
+								TLV{
+									Tag:    "02",
+									Length: "04",
+									Value:  "efgh",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -536,230 +619,332 @@ func Test_ParseEMVQR(t *testing.T) {
 	}
 }
 
-// func TestEMVQR_GeneratePayload(t *testing.T) {
-// 	type fields struct {
-// 		PayloadFormatIndicator              string
-// 		PointOfInitiationMethod             PointOfInitiationMethod
-// 		MerchantAccountInformation          map[ID]*MerchantAccountInformation
-// 		MerchantCategoryCode                string
-// 		TransactionCurrency                 string
-// 		TransactionAmount                   string
-// 		TipOrConvenienceIndicator           string
-// 		ValueOfConvenienceFeeFixed          string
-// 		ValueOfConvenienceFeePercentage     string
-// 		CountryCode                         string
-// 		MerchantName                        string
-// 		MerchantCity                        string
-// 		PostalCode                          string
-// 		AdditionalDataFieldTemplate         *AdditionalDataFieldTemplate
-// 		CRC                                 string
-// 		MerchantInformationLanguageTemplate *MerchantInformationLanguageTemplate
-// 		RFUforEMVCo                         map[ID]*RFUforEMVCo
-// 		UnreservedTemplates                 map[ID]*UnreservedTemplate
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		fields  fields
-// 		want    string
-// 		wantErr bool
-// 	}{
-// 		{
-// 			name:    "empty EMVQR",
-// 			fields:  fields{},
-// 			want:    "0000" + formatCrc("0000"),
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "stringify payload format indicator",
-// 			fields: fields{
-// 				PayloadFormatIndicator: "01",
-// 			},
-// 			want:    "000201" + formatCrc("000201"),
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "stringify point of initiation method",
-// 			fields: fields{
-// 				PointOfInitiationMethod: PointOfInitiationMethodStatic,
-// 			},
-// 			want:    "0000" + "010211" + formatCrc("0000"+"010211"),
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "stringify merchant category code",
-// 			fields: fields{
-// 				MerchantCategoryCode: "4111",
-// 			},
-// 			want:    "0000" + "52044111" + formatCrc("0000"+"52044111"),
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "stringify transaction currency",
-// 			fields: fields{
-// 				TransactionCurrency: "156",
-// 			},
-// 			want:    "0000" + "5303156" + formatCrc("0000"+"5303156"),
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "stringify transaction amount",
-// 			fields: fields{
-// 				TransactionAmount: "23.72",
-// 			},
-// 			want:    "0000" + "540523.72" + formatCrc("0000"+"540523.72"),
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "stringify tip or convenience indicator",
-// 			fields: fields{
-// 				TipOrConvenienceIndicator: "01",
-// 			},
-// 			want:    "0000" + "550201" + formatCrc("0000"+"550201"),
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "stringify value of convenience fee fixed",
-// 			fields: fields{
-// 				ValueOfConvenienceFeeFixed: "500",
-// 			},
-// 			want:    "0000" + "5603500" + formatCrc("0000"+"5603500"),
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "stringify value of convenience fee percentage",
-// 			fields: fields{
-// 				ValueOfConvenienceFeePercentage: "5",
-// 			},
-// 			want:    "0000" + "57015" + formatCrc("0000"+"57015"),
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "stringify country code",
-// 			fields: fields{
-// 				CountryCode: "CN",
-// 			},
-// 			want:    "0000" + "5802CN" + formatCrc("0000"+"5802CN"),
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "stringify merchant name",
-// 			fields: fields{
-// 				MerchantName: "BEST TRANSPORT",
-// 			},
-// 			want:    "0000" + "5914BEST TRANSPORT" + formatCrc("0000"+"5914BEST TRANSPORT"),
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "stringify merchant city",
-// 			fields: fields{
-// 				MerchantCity: "BEIJING",
-// 			},
-// 			want:    "0000" + "6007BEIJING" + formatCrc("0000"+"6007BEIJING"),
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "stringify postal code",
-// 			fields: fields{
-// 				PostalCode: "1234567",
-// 			},
-// 			want:    "0000" + "61071234567" + formatCrc("0000"+"61071234567"),
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "stringify additional data field template",
-// 			fields: fields{
-// 				AdditionalDataFieldTemplate: &AdditionalDataFieldTemplate{
-// 					StoreLabel:                    "1234",
-// 					CustomerLabel:                 "***",
-// 					TerminalLabel:                 "A6008667",
-// 					AdditionalConsumerDataRequest: "ME",
-// 				},
-// 			},
-// 			want:    "0000" + "6233030412340603***0708A60086670902ME" + formatCrc("0000"+"6233030412340603***0708A60086670902ME"),
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "stringify merchant information language template",
-// 			fields: fields{
-// 				MerchantInformationLanguageTemplate: &MerchantInformationLanguageTemplate{
-// 					LanguagePreference: "ZH",
-// 					MerchantName:       "最佳运输",
-// 					MerchantCity:       "北京",
-// 				},
-// 			},
-// 			want:    "0000" + "64200002ZH0104最佳运输0202北京" + formatCrc("0000"+"64200002ZH0104最佳运输0202北京"),
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "stringify merchant account information",
-// 			fields: fields{
-// 				MerchantAccountInformation: map[ID]*MerchantAccountInformation{
-// 					ID("02"): &MerchantAccountInformation{
-// 						Value: "0004hoge0104abcd",
-// 					},
-// 				},
-// 			},
-// 			want:    "0000" + "02160004hoge0104abcd" + formatCrc("0000"+"02160004hoge0104abcd"),
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "stringify RFU for EMVCo",
-// 			fields: fields{
-// 				RFUforEMVCo: map[ID]*RFUforEMVCo{
-// 					ID("65"): &RFUforEMVCo{
-// 						Value: "abcd",
-// 					},
-// 				},
-// 			},
-// 			want:    "0000" + "6504abcd" + formatCrc("0000"+"6504abcd"),
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "stringify unreserved templates",
-// 			fields: fields{
-// 				UnreservedTemplates: map[ID]*UnreservedTemplate{
-// 					ID("80"): &UnreservedTemplate{
-// 						Value: "abcd",
-// 					},
-// 				},
-// 			},
-// 			want:    "0000" + "8004abcd" + formatCrc("0000"+"8004abcd"),
-// 			wantErr: false,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			c := &EMVQR{
-// 				PayloadFormatIndicator:          tt.fields.PayloadFormatIndicator,
-// 				PointOfInitiationMethod:         tt.fields.PointOfInitiationMethod,
-// 				MerchantAccountInformation:      tt.fields.MerchantAccountInformation,
-// 				MerchantCategoryCode:            tt.fields.MerchantCategoryCode,
-// 				TransactionCurrency:             tt.fields.TransactionCurrency,
-// 				TransactionAmount:               tt.fields.TransactionAmount,
-// 				TipOrConvenienceIndicator:       tt.fields.TipOrConvenienceIndicator,
-// 				ValueOfConvenienceFeeFixed:      tt.fields.ValueOfConvenienceFeeFixed,
-// 				ValueOfConvenienceFeePercentage: tt.fields.ValueOfConvenienceFeePercentage,
-// 				CountryCode:                     tt.fields.CountryCode,
-// 				MerchantName:                    tt.fields.MerchantName,
-// 				MerchantCity:                    tt.fields.MerchantCity,
-// 				PostalCode:                      tt.fields.PostalCode,
-// 				AdditionalDataFieldTemplate:     tt.fields.AdditionalDataFieldTemplate,
-// 				CRC: tt.fields.CRC,
-// 				MerchantInformationLanguageTemplate: tt.fields.MerchantInformationLanguageTemplate,
-// 				RFUforEMVCo:                         tt.fields.RFUforEMVCo,
-// 				UnreservedTemplates:                 tt.fields.UnreservedTemplates,
-// 			}
-// 			got, err := c.GeneratePayload()
-// 			if (err != nil) != tt.wantErr {
-// 				t.Errorf("EMVQR.GeneratePayload() error = %v, wantErr %v", err, tt.wantErr)
-// 				return
-// 			}
-// 			if got != tt.want {
-// 				t.Errorf("EMVQR.GeneratePayload() = %v, want %v", got, tt.want)
-// 			}
-// 		})
-// 	}
-// }
+func TestEMVQR_GeneratePayload(t *testing.T) {
+	type fields struct {
+		PayloadFormatIndicator              TLV
+		PointOfInitiationMethod             TLV
+		MerchantAccountInformation          map[ID]MerchantAccountInformationTLV
+		MerchantCategoryCode                TLV
+		TransactionCurrency                 TLV
+		TransactionAmount                   TLV
+		TipOrConvenienceIndicator           TLV
+		ValueOfConvenienceFeeFixed          TLV
+		ValueOfConvenienceFeePercentage     TLV
+		CountryCode                         TLV
+		MerchantName                        TLV
+		MerchantCity                        TLV
+		PostalCode                          TLV
+		AdditionalDataFieldTemplate         *AdditionalDataFieldTemplate
+		CRC                                 TLV
+		MerchantInformationLanguageTemplate *MerchantInformationLanguageTemplate
+		RFUforEMVCo                         []TLV
+		UnreservedTemplates                 map[ID]UnreservedTemplateTLV
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "stringify payload format indicator",
+			fields: fields{
+				PayloadFormatIndicator: TLV{
+					Tag:    "00",
+					Length: "02",
+					Value:  "01",
+				},
+			},
+			want:    "000201" + formatCrc("000201"),
+			wantErr: false,
+		},
+		{
+			name: "stringify point of initiation method",
+			fields: fields{
+				PointOfInitiationMethod: TLV{
+					Tag:    "01",
+					Length: "02",
+					Value:  "11",
+				},
+			},
+			want:    "010211" + formatCrc("010211"),
+			wantErr: false,
+		},
+		{
+			name: "stringify merchant category code",
+			fields: fields{
+				MerchantCategoryCode: TLV{
+					Tag:    "52",
+					Length: "04",
+					Value:  "4111",
+				},
+			},
+			want:    "52044111" + formatCrc("52044111"),
+			wantErr: false,
+		},
+		{
+			name: "stringify transaction currency",
+			fields: fields{
+				TransactionCurrency: TLV{
+					Tag:    "53",
+					Length: "03",
+					Value:  "156",
+				},
+			},
+			want:    "5303156" + formatCrc("5303156"),
+			wantErr: false,
+		},
+		{
+			name: "stringify transaction amount",
+			fields: fields{
+				TransactionAmount: TLV{
+					Tag:    "54",
+					Length: "05",
+					Value:  "23.72",
+				},
+			},
+			want:    "540523.72" + formatCrc("540523.72"),
+			wantErr: false,
+		},
+		{
+			name: "stringify tip or convenience indicator",
+			fields: fields{
+				TipOrConvenienceIndicator: TLV{
+					Tag:    "55",
+					Length: "02",
+					Value:  "01",
+				},
+			},
+			want:    "550201" + formatCrc("550201"),
+			wantErr: false,
+		},
+		{
+			name: "stringify value of convenience fee fixed",
+			fields: fields{
+				ValueOfConvenienceFeeFixed: TLV{
+					Tag:    "56",
+					Length: "03",
+					Value:  "500",
+				},
+			},
+			want:    "5603500" + formatCrc("5603500"),
+			wantErr: false,
+		},
+		{
+			name: "stringify value of convenience fee percentage",
+			fields: fields{
+				ValueOfConvenienceFeePercentage: TLV{
+					Tag:    "57",
+					Length: "01",
+					Value:  "5",
+				},
+			},
+			want:    "57015" + formatCrc("57015"),
+			wantErr: false,
+		},
+		{
+			name: "stringify country code",
+			fields: fields{
+				CountryCode: TLV{
+					Tag:    "58",
+					Length: "02",
+					Value:  "CN",
+				},
+			},
+			want:    "5802CN" + formatCrc("5802CN"),
+			wantErr: false,
+		},
+		{
+			name: "stringify merchant name",
+			fields: fields{
+				MerchantName: TLV{
+					Tag:    "59",
+					Length: "14",
+					Value:  "BEST TRANSPORT",
+				},
+			},
+			want:    "5914BEST TRANSPORT" + formatCrc("5914BEST TRANSPORT"),
+			wantErr: false,
+		},
+		{
+			name: "stringify merchant city",
+			fields: fields{
+				MerchantCity: TLV{
+					Tag:    "60",
+					Length: "07",
+					Value:  "BEIJING",
+				},
+			},
+			want:    "6007BEIJING" + formatCrc("6007BEIJING"),
+			wantErr: false,
+		},
+		{
+			name: "stringify postal code",
+			fields: fields{
+				PostalCode: TLV{
+					Tag:    "61",
+					Length: "07",
+					Value:  "1234567",
+				},
+			},
+			want:    "61071234567" + formatCrc("61071234567"),
+			wantErr: false,
+		},
+		{
+			name: "stringify additional data field template",
+			fields: fields{
+				AdditionalDataFieldTemplate: &AdditionalDataFieldTemplate{
+					StoreLabel: TLV{
+						Tag:    "03",
+						Length: "04",
+						Value:  "1234",
+					},
+					CustomerLabel: TLV{
+						Tag:    "06",
+						Length: "03",
+						Value:  "***",
+					},
+					TerminalLabel: TLV{
+						Tag:    "07",
+						Length: "08",
+						Value:  "A6008667",
+					},
+					AdditionalConsumerDataRequest: TLV{
+						Tag:    "09",
+						Length: "02",
+						Value:  "ME",
+					},
+				},
+			},
+			want:    "6233030412340603***0708A60086670902ME" + formatCrc("6233030412340603***0708A60086670902ME"),
+			wantErr: false,
+		},
+		{
+			name: "stringify merchant information language template",
+			fields: fields{
+				MerchantInformationLanguageTemplate: &MerchantInformationLanguageTemplate{
+					LanguagePreference: TLV{
+						Tag:    "00",
+						Length: "02",
+						Value:  "ZH",
+					},
+					MerchantName: TLV{
+						Tag:    "01",
+						Length: "04",
+						Value:  "最佳运输",
+					},
+					MerchantCity: TLV{
+						Tag:    "02",
+						Length: "02",
+						Value:  "北京",
+					},
+				},
+			},
+			want:    "64200002ZH0104最佳运输0202北京" + formatCrc("64200002ZH0104最佳运输0202北京"),
+			wantErr: false,
+		},
+		{
+			name: "stringify merchant account information",
+			fields: fields{
+				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
+					ID("02"): MerchantAccountInformationTLV{
+						Tag:    "02",
+						Length: "16",
+						Value: &MerchantAccountInformation{
+							GloballyUniqueIdentifier: TLV{
+								Tag:    "00",
+								Length: "04",
+								Value:  "hoge",
+							},
+							PaymentNetworkSpecific: []TLV{
+								TLV{
+									Tag:    "01",
+									Length: "04",
+									Value:  "abcd",
+								},
+							},
+						},
+					},
+				},
+			},
+			want:    "02160004hoge0104abcd" + formatCrc("02160004hoge0104abcd"),
+			wantErr: false,
+		},
+		{
+			name: "stringify RFU for EMVCo",
+			fields: fields{
+				RFUforEMVCo: []TLV{
+					TLV{
+						Tag:    "65",
+						Length: "04",
+						Value:  "abcd",
+					},
+				},
+			},
+			want:    "6504abcd" + formatCrc("6504abcd"),
+			wantErr: false,
+		},
+		{
+			name: "stringify unreserved templates",
+			fields: fields{
+				UnreservedTemplates: map[ID]UnreservedTemplateTLV{
+					ID("80"): UnreservedTemplateTLV{
+						Tag:    "80",
+						Length: "16",
+						Value: &UnreservedTemplate{
+							GloballyUniqueIdentifier: TLV{
+								Tag:    "00",
+								Length: "04",
+								Value:  "abcd",
+							},
+							ContextSpecificData: []TLV{
+								TLV{
+									Tag:    "01",
+									Length: "04",
+									Value:  "efgh",
+								},
+							},
+						},
+					},
+				},
+			},
+			want:    "80160004abcd0104efgh" + formatCrc("80160004abcd0104efgh"),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &EMVQR{
+				PayloadFormatIndicator:          tt.fields.PayloadFormatIndicator,
+				PointOfInitiationMethod:         tt.fields.PointOfInitiationMethod,
+				MerchantAccountInformation:      tt.fields.MerchantAccountInformation,
+				MerchantCategoryCode:            tt.fields.MerchantCategoryCode,
+				TransactionCurrency:             tt.fields.TransactionCurrency,
+				TransactionAmount:               tt.fields.TransactionAmount,
+				TipOrConvenienceIndicator:       tt.fields.TipOrConvenienceIndicator,
+				ValueOfConvenienceFeeFixed:      tt.fields.ValueOfConvenienceFeeFixed,
+				ValueOfConvenienceFeePercentage: tt.fields.ValueOfConvenienceFeePercentage,
+				CountryCode:                     tt.fields.CountryCode,
+				MerchantName:                    tt.fields.MerchantName,
+				MerchantCity:                    tt.fields.MerchantCity,
+				PostalCode:                      tt.fields.PostalCode,
+				AdditionalDataFieldTemplate:     tt.fields.AdditionalDataFieldTemplate,
+				CRC: tt.fields.CRC,
+				MerchantInformationLanguageTemplate: tt.fields.MerchantInformationLanguageTemplate,
+				RFUforEMVCo:                         tt.fields.RFUforEMVCo,
+				UnreservedTemplates:                 tt.fields.UnreservedTemplates,
+			}
+			got := c.GeneratePayload()
+			// if (err != nil) != tt.wantErr {
+			// 	t.Errorf("EMVQR.GeneratePayload() error = %v, wantErr %v", err, tt.wantErr)
+			// 	return
+			// }
+			if got != tt.want {
+				t.Errorf("EMVQR.GeneratePayload() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
 
 // func TestEMVQR_Validate(t *testing.T) {
 // 	type fields struct {
