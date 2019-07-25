@@ -1,11 +1,11 @@
 # EMVco QR code
 
-[![CircleCI](https://circleci.com/gh/dongri/emvco-qrcode.svg?style=svg)](https://circleci.com/gh/dongri/emvco-qrcode)
+[![CircleCI](https://circleci.com/gh/dongri/emv-qrcode.svg?style=svg)](https://circleci.com/gh/dongri/emv-qrcode)
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/dongri/emvco-qrcode)](https://goreportcard.com/report/github.com/dongri/emvco-qrcode)
+[![Go Report Card](https://goreportcard.com/badge/github.com/dongri/emv-qrcode)](https://goreportcard.com/report/github.com/dongri/emv-qrcode)
 
 ### Documents
-https://github.com/dongri/emvco-qrcode-doc
+https://github.com/dongri/emv-qrcode-doc
 
 ### MPM (Merchant Presented Mode)
 ```go
@@ -14,7 +14,7 @@ package main
 import(
 	"log"
 
-	"github.com/dongri/emvco-qrcode/emvco/mpm"
+	"github.com/dongri/emv-qrcode/emvco/mpm"
 )
 func main() {
 
@@ -80,7 +80,7 @@ package main
 import(
 	"log"
 
-	"github.com/dongri/emvco-qrcode/emvco/cpm"
+	"github.com/dongri/emv-qrcode/emvco/cpm"
 )
 func main() {
 	qr := new(cpm.EMVQR)
