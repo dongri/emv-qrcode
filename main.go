@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/dongri/emv-qrcode/emvco/cpm"
-	"github.com/dongri/emv-qrcode/emvco/mpm"
+	"github.com/dongri/emv-qrcode/emv/cpm"
+	"github.com/dongri/emv-qrcode/emv/mpm"
 )
 
 func main() {
