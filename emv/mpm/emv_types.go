@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -498,6 +499,9 @@ func (s *MerchantAccountInformation) String() string {
 	}
 	t := ""
 	t += s.GloballyUniqueIdentifier.String()
+	sort.Slice(s.PaymentNetworkSpecific, func(i, j int) bool {
+		return s.PaymentNetworkSpecific[i].Tag < s.PaymentNetworkSpecific[j].Tag
+	})
 	for _, pns := range s.PaymentNetworkSpecific {
 		t += pns.String()
 	}
@@ -823,8 +827,14 @@ func (c *EMVQR) GeneratePayload() string {
 	s := ""
 	s += c.PayloadFormatIndicator.String()
 	s += c.PointOfInitiationMethod.String()
-	for _, m := range c.MerchantAccountInformation {
-		s += m.String()
+	var keys []string
+	for k := range c.MerchantAccountInformation {
+		keys = append(keys, k.String())
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		v, _ := c.MerchantAccountInformation[ID(k)]
+		s += v.String()
 	}
 	s += c.MerchantCategoryCode.String()
 	s += c.TransactionCurrency.String()
