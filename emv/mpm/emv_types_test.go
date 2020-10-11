@@ -442,7 +442,7 @@ func TestEMVQR_GeneratePayload(t *testing.T) {
 				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
 					ID("02"): MerchantAccountInformationTLV{
 						Tag:    "02",
-						Length: "16",
+						Length: "32",
 						Value: &MerchantAccountInformation{
 							GloballyUniqueIdentifier: TLV{
 								Tag:    "00",
@@ -455,12 +455,22 @@ func TestEMVQR_GeneratePayload(t *testing.T) {
 									Length: "04",
 									Value:  "abcd",
 								},
+								TLV{
+									Tag:    "15",
+									Length: "04",
+									Value:  "efgh",
+								},
+								TLV{
+									Tag:    "13",
+									Length: "04",
+									Value:  "ijkl",
+								},
 							},
 						},
 					},
 				},
 			},
-			want:    "02160004hoge0104abcd" + formatCrc("02160004hoge0104abcd"),
+			want:    "02320004hoge0104abcd1304ijkl1504efgh" + formatCrc("02320004hoge0104abcd1304ijkl1504efgh"),
 			wantErr: false,
 		},
 		{
