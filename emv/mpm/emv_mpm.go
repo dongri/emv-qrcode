@@ -15,7 +15,7 @@ func Decode(payload string) (*EMVQR, error) {
 		return nil, err
 	}
 	if err := emvqr.Validate(); err != nil {
-		return nil, err
+		return emvqr, err
 	}
 	return emvqr, nil
 }
