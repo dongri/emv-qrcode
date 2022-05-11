@@ -833,7 +833,7 @@ func (c *EMVQR) GeneratePayload() string {
 	}
 	sort.Strings(keys)
 	for _, k := range keys {
-		v, _ := c.MerchantAccountInformation[ID(k)]
+		v := c.MerchantAccountInformation[ID(k)]
 		s += v.String()
 	}
 	s += c.MerchantCategoryCode.String()

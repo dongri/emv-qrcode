@@ -38,12 +38,12 @@ func syntaxError(fn, str string) *ParserError {
 	}
 }
 
-func idRangeError(fn string, id ID) *ParserError {
-	return &ParserError{
-		Func: fn,
-		Err:  errors.New("id range invalid. id: " + id.String()),
-	}
-}
+// func idRangeError(fn string, id ID) *ParserError {
+// 	return &ParserError{
+// 		Func: fn,
+// 		Err:  errors.New("id range invalid. id: " + id.String()),
+// 	}
+// }
 
 // const ...
 const (

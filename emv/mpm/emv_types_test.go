@@ -440,7 +440,7 @@ func TestEMVQR_GeneratePayload(t *testing.T) {
 			name: "stringify merchant account information",
 			fields: fields{
 				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
-					ID("02"): MerchantAccountInformationTLV{
+					ID("02"): {
 						Tag:    "02",
 						Length: "32",
 						Value: &MerchantAccountInformation{
@@ -450,17 +450,17 @@ func TestEMVQR_GeneratePayload(t *testing.T) {
 								Value:  "hoge",
 							},
 							PaymentNetworkSpecific: []TLV{
-								TLV{
+								{
 									Tag:    "01",
 									Length: "04",
 									Value:  "abcd",
 								},
-								TLV{
+								{
 									Tag:    "15",
 									Length: "04",
 									Value:  "efgh",
 								},
-								TLV{
+								{
 									Tag:    "13",
 									Length: "04",
 									Value:  "ijkl",
@@ -477,7 +477,7 @@ func TestEMVQR_GeneratePayload(t *testing.T) {
 			name: "stringify RFU for EMVCo",
 			fields: fields{
 				RFUforEMVCo: []TLV{
-					TLV{
+					{
 						Tag:    "65",
 						Length: "04",
 						Value:  "abcd",
@@ -491,7 +491,7 @@ func TestEMVQR_GeneratePayload(t *testing.T) {
 			name: "stringify unreserved templates",
 			fields: fields{
 				UnreservedTemplates: map[ID]UnreservedTemplateTLV{
-					ID("80"): UnreservedTemplateTLV{
+					ID("80"): {
 						Tag:    "80",
 						Length: "16",
 						Value: &UnreservedTemplate{
@@ -501,7 +501,7 @@ func TestEMVQR_GeneratePayload(t *testing.T) {
 								Value:  "abcd",
 							},
 							ContextSpecificData: []TLV{
-								TLV{
+								{
 									Tag:    "01",
 									Length: "04",
 									Value:  "efgh",
@@ -518,21 +518,21 @@ func TestEMVQR_GeneratePayload(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &EMVQR{
-				PayloadFormatIndicator:          tt.fields.PayloadFormatIndicator,
-				PointOfInitiationMethod:         tt.fields.PointOfInitiationMethod,
-				MerchantAccountInformation:      tt.fields.MerchantAccountInformation,
-				MerchantCategoryCode:            tt.fields.MerchantCategoryCode,
-				TransactionCurrency:             tt.fields.TransactionCurrency,
-				TransactionAmount:               tt.fields.TransactionAmount,
-				TipOrConvenienceIndicator:       tt.fields.TipOrConvenienceIndicator,
-				ValueOfConvenienceFeeFixed:      tt.fields.ValueOfConvenienceFeeFixed,
-				ValueOfConvenienceFeePercentage: tt.fields.ValueOfConvenienceFeePercentage,
-				CountryCode:                     tt.fields.CountryCode,
-				MerchantName:                    tt.fields.MerchantName,
-				MerchantCity:                    tt.fields.MerchantCity,
-				PostalCode:                      tt.fields.PostalCode,
-				AdditionalDataFieldTemplate:     tt.fields.AdditionalDataFieldTemplate,
-				CRC: tt.fields.CRC,
+				PayloadFormatIndicator:              tt.fields.PayloadFormatIndicator,
+				PointOfInitiationMethod:             tt.fields.PointOfInitiationMethod,
+				MerchantAccountInformation:          tt.fields.MerchantAccountInformation,
+				MerchantCategoryCode:                tt.fields.MerchantCategoryCode,
+				TransactionCurrency:                 tt.fields.TransactionCurrency,
+				TransactionAmount:                   tt.fields.TransactionAmount,
+				TipOrConvenienceIndicator:           tt.fields.TipOrConvenienceIndicator,
+				ValueOfConvenienceFeeFixed:          tt.fields.ValueOfConvenienceFeeFixed,
+				ValueOfConvenienceFeePercentage:     tt.fields.ValueOfConvenienceFeePercentage,
+				CountryCode:                         tt.fields.CountryCode,
+				MerchantName:                        tt.fields.MerchantName,
+				MerchantCity:                        tt.fields.MerchantCity,
+				PostalCode:                          tt.fields.PostalCode,
+				AdditionalDataFieldTemplate:         tt.fields.AdditionalDataFieldTemplate,
+				CRC:                                 tt.fields.CRC,
 				MerchantInformationLanguageTemplate: tt.fields.MerchantInformationLanguageTemplate,
 				RFUforEMVCo:                         tt.fields.RFUforEMVCo,
 				UnreservedTemplates:                 tt.fields.UnreservedTemplates,
@@ -764,7 +764,7 @@ func Test_ParseEMVQR(t *testing.T) {
 			},
 			want: &EMVQR{
 				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
-					ID("02"): MerchantAccountInformationTLV{
+					ID("02"): {
 						Tag:    "02",
 						Length: "16",
 						Value: &MerchantAccountInformation{
@@ -774,7 +774,7 @@ func Test_ParseEMVQR(t *testing.T) {
 								Value:  "hoge",
 							},
 							PaymentNetworkSpecific: []TLV{
-								TLV{
+								{
 									Tag:    "01",
 									Length: "04",
 									Value:  "abcd",
@@ -801,7 +801,7 @@ func Test_ParseEMVQR(t *testing.T) {
 			},
 			want: &EMVQR{
 				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
-					ID("02"): MerchantAccountInformationTLV{
+					ID("02"): {
 						Tag:    "02",
 						Length: "16",
 						Value: &MerchantAccountInformation{
@@ -811,7 +811,7 @@ func Test_ParseEMVQR(t *testing.T) {
 								Value:  "hoge",
 							},
 							PaymentNetworkSpecific: []TLV{
-								TLV{
+								{
 									Tag:    "01",
 									Length: "04",
 									Value:  "abcd",
@@ -819,7 +819,7 @@ func Test_ParseEMVQR(t *testing.T) {
 							},
 						},
 					},
-					ID("26"): MerchantAccountInformationTLV{
+					ID("26"): {
 						Tag:    "26",
 						Length: "16",
 						Value: &MerchantAccountInformation{
@@ -829,7 +829,7 @@ func Test_ParseEMVQR(t *testing.T) {
 								Value:  "fuga",
 							},
 							PaymentNetworkSpecific: []TLV{
-								TLV{
+								{
 									Tag:    "02",
 									Length: "04",
 									Value:  "efgh",
@@ -848,7 +848,7 @@ func Test_ParseEMVQR(t *testing.T) {
 			},
 			want: &EMVQR{
 				RFUforEMVCo: []TLV{
-					TLV{
+					{
 						Tag:    "65",
 						Length: "04",
 						Value:  "abcd",
@@ -864,12 +864,12 @@ func Test_ParseEMVQR(t *testing.T) {
 			},
 			want: &EMVQR{
 				RFUforEMVCo: []TLV{
-					TLV{
+					{
 						Tag:    "65",
 						Length: "04",
 						Value:  "abcd",
 					},
-					TLV{
+					{
 						Tag:    "79",
 						Length: "04",
 						Value:  "efgh",
@@ -885,7 +885,7 @@ func Test_ParseEMVQR(t *testing.T) {
 			},
 			want: &EMVQR{
 				UnreservedTemplates: map[ID]UnreservedTemplateTLV{
-					ID("80"): UnreservedTemplateTLV{
+					ID("80"): {
 						Tag:    "80",
 						Length: "16",
 						Value: &UnreservedTemplate{
@@ -895,7 +895,7 @@ func Test_ParseEMVQR(t *testing.T) {
 								Value:  "hoge",
 							},
 							ContextSpecificData: []TLV{
-								TLV{
+								{
 									Tag:    "01",
 									Length: "04",
 									Value:  "abcd",
@@ -914,7 +914,7 @@ func Test_ParseEMVQR(t *testing.T) {
 			},
 			want: &EMVQR{
 				UnreservedTemplates: map[ID]UnreservedTemplateTLV{
-					ID("80"): UnreservedTemplateTLV{
+					ID("80"): {
 						Tag:    "80",
 						Length: "24",
 						Value: &UnreservedTemplate{
@@ -924,12 +924,12 @@ func Test_ParseEMVQR(t *testing.T) {
 								Value:  "hoge",
 							},
 							ContextSpecificData: []TLV{
-								TLV{
+								{
 									Tag:    "01",
 									Length: "04",
 									Value:  "abcd",
 								},
-								TLV{
+								{
 									Tag:    "02",
 									Length: "04",
 									Value:  "efgh",
@@ -991,7 +991,7 @@ func TestEMVQR_Validate(t *testing.T) {
 					Value:  "01",
 				},
 				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
-					ID("02"): MerchantAccountInformationTLV{},
+					ID("02"): {},
 				},
 				MerchantCategoryCode: TLV{
 					Tag:    IDMerchantCategoryCode,
@@ -1046,7 +1046,7 @@ func TestEMVQR_Validate(t *testing.T) {
 					Value:  "01",
 				},
 				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
-					ID("02"): MerchantAccountInformationTLV{},
+					ID("02"): {},
 				},
 			},
 			wantErr: true,
@@ -1060,7 +1060,7 @@ func TestEMVQR_Validate(t *testing.T) {
 					Value:  "01",
 				},
 				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
-					ID("02"): MerchantAccountInformationTLV{},
+					ID("02"): {},
 				},
 				MerchantCategoryCode: TLV{
 					Tag:    IDMerchantCategoryCode,
@@ -1079,7 +1079,7 @@ func TestEMVQR_Validate(t *testing.T) {
 					Value:  "01",
 				},
 				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
-					ID("02"): MerchantAccountInformationTLV{},
+					ID("02"): {},
 				},
 				MerchantCategoryCode: TLV{
 					Tag:    IDMerchantCategoryCode,
@@ -1103,7 +1103,7 @@ func TestEMVQR_Validate(t *testing.T) {
 					Value:  "01",
 				},
 				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
-					ID("02"): MerchantAccountInformationTLV{},
+					ID("02"): {},
 				},
 				MerchantCategoryCode: TLV{
 					Tag:    IDMerchantCategoryCode,
@@ -1132,7 +1132,7 @@ func TestEMVQR_Validate(t *testing.T) {
 					Value:  "01",
 				},
 				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
-					ID("02"): MerchantAccountInformationTLV{},
+					ID("02"): {},
 				},
 				MerchantCategoryCode: TLV{
 					Tag:    IDMerchantCategoryCode,
@@ -1166,7 +1166,7 @@ func TestEMVQR_Validate(t *testing.T) {
 					Value:  "01",
 				},
 				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
-					ID("02"): MerchantAccountInformationTLV{},
+					ID("02"): {},
 				},
 				MerchantCategoryCode: TLV{
 					Tag:    IDMerchantCategoryCode,
@@ -1205,7 +1205,7 @@ func TestEMVQR_Validate(t *testing.T) {
 					Value:  "01",
 				},
 				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
-					ID("02"): MerchantAccountInformationTLV{},
+					ID("02"): {},
 				},
 				MerchantCategoryCode: TLV{
 					Tag:    IDMerchantCategoryCode,
@@ -1245,7 +1245,7 @@ func TestEMVQR_Validate(t *testing.T) {
 					Value:  "01",
 				},
 				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
-					ID("02"): MerchantAccountInformationTLV{},
+					ID("02"): {},
 				},
 				MerchantCategoryCode: TLV{
 					Tag:    IDMerchantCategoryCode,
@@ -1284,7 +1284,7 @@ func TestEMVQR_Validate(t *testing.T) {
 					Value:  "01",
 				},
 				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
-					ID("02"): MerchantAccountInformationTLV{},
+					ID("02"): {},
 				},
 				MerchantCategoryCode: TLV{
 					Tag:    IDMerchantCategoryCode,
@@ -1324,7 +1324,7 @@ func TestEMVQR_Validate(t *testing.T) {
 					Value:  "01",
 				},
 				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
-					ID("02"): MerchantAccountInformationTLV{},
+					ID("02"): {},
 				},
 				MerchantCategoryCode: TLV{
 					Tag:    IDMerchantCategoryCode,
@@ -1364,7 +1364,7 @@ func TestEMVQR_Validate(t *testing.T) {
 					Value:  "01",
 				},
 				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
-					ID("02"): MerchantAccountInformationTLV{},
+					ID("02"): {},
 				},
 				MerchantCategoryCode: TLV{
 					Tag:    IDMerchantCategoryCode,
@@ -1392,7 +1392,7 @@ func TestEMVQR_Validate(t *testing.T) {
 					Value:  "tokyo",
 				},
 				UnreservedTemplates: map[ID]UnreservedTemplateTLV{
-					ID("80"): UnreservedTemplateTLV{
+					ID("80"): {
 						Tag:    "80",
 						Length: "16",
 						Value: &UnreservedTemplate{
@@ -1402,7 +1402,7 @@ func TestEMVQR_Validate(t *testing.T) {
 								Value:  "abcd",
 							},
 							ContextSpecificData: []TLV{
-								TLV{
+								{
 									Tag:    "01",
 									Length: "04",
 									Value:  "efgh",
@@ -1418,21 +1418,21 @@ func TestEMVQR_Validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &EMVQR{
-				PayloadFormatIndicator:          tt.fields.PayloadFormatIndicator,
-				PointOfInitiationMethod:         tt.fields.PointOfInitiationMethod,
-				MerchantAccountInformation:      tt.fields.MerchantAccountInformation,
-				MerchantCategoryCode:            tt.fields.MerchantCategoryCode,
-				TransactionCurrency:             tt.fields.TransactionCurrency,
-				TransactionAmount:               tt.fields.TransactionAmount,
-				TipOrConvenienceIndicator:       tt.fields.TipOrConvenienceIndicator,
-				ValueOfConvenienceFeeFixed:      tt.fields.ValueOfConvenienceFeeFixed,
-				ValueOfConvenienceFeePercentage: tt.fields.ValueOfConvenienceFeePercentage,
-				CountryCode:                     tt.fields.CountryCode,
-				MerchantName:                    tt.fields.MerchantName,
-				MerchantCity:                    tt.fields.MerchantCity,
-				PostalCode:                      tt.fields.PostalCode,
-				AdditionalDataFieldTemplate:     tt.fields.AdditionalDataFieldTemplate,
-				CRC: tt.fields.CRC,
+				PayloadFormatIndicator:              tt.fields.PayloadFormatIndicator,
+				PointOfInitiationMethod:             tt.fields.PointOfInitiationMethod,
+				MerchantAccountInformation:          tt.fields.MerchantAccountInformation,
+				MerchantCategoryCode:                tt.fields.MerchantCategoryCode,
+				TransactionCurrency:                 tt.fields.TransactionCurrency,
+				TransactionAmount:                   tt.fields.TransactionAmount,
+				TipOrConvenienceIndicator:           tt.fields.TipOrConvenienceIndicator,
+				ValueOfConvenienceFeeFixed:          tt.fields.ValueOfConvenienceFeeFixed,
+				ValueOfConvenienceFeePercentage:     tt.fields.ValueOfConvenienceFeePercentage,
+				CountryCode:                         tt.fields.CountryCode,
+				MerchantName:                        tt.fields.MerchantName,
+				MerchantCity:                        tt.fields.MerchantCity,
+				PostalCode:                          tt.fields.PostalCode,
+				AdditionalDataFieldTemplate:         tt.fields.AdditionalDataFieldTemplate,
+				CRC:                                 tt.fields.CRC,
 				MerchantInformationLanguageTemplate: tt.fields.MerchantInformationLanguageTemplate,
 				RFUforEMVCo:                         tt.fields.RFUforEMVCo,
 				UnreservedTemplates:                 tt.fields.UnreservedTemplates,
@@ -1638,7 +1638,7 @@ func Test_ParseAdditionalDataFieldTemplate(t *testing.T) {
 			},
 			want: &AdditionalDataFieldTemplate{
 				PaymentSystemSpecific: []TLV{
-					TLV{
+					{
 						Tag:    "50",
 						Length: "16",
 						Value:  "0004hoge0104abcd",
@@ -1654,7 +1654,7 @@ func Test_ParseAdditionalDataFieldTemplate(t *testing.T) {
 			},
 			want: &AdditionalDataFieldTemplate{
 				RFUforEMVCo: []TLV{
-					TLV{
+					{
 						Tag:    "10",
 						Length: "04",
 						Value:  "abcd",
@@ -1670,12 +1670,12 @@ func Test_ParseAdditionalDataFieldTemplate(t *testing.T) {
 			},
 			want: &AdditionalDataFieldTemplate{
 				RFUforEMVCo: []TLV{
-					TLV{
+					{
 						Tag:    "10",
 						Length: "04",
 						Value:  "abcd",
 					},
-					TLV{
+					{
 						Tag:    "49",
 						Length: "04",
 						Value:  "efgh",
@@ -1782,7 +1782,7 @@ func Test_ParseMerchantInformationLanguageTemplate(t *testing.T) {
 			},
 			want: &MerchantInformationLanguageTemplate{
 				RFUforEMVCo: []TLV{
-					TLV{
+					{
 						Tag:    "10",
 						Length: "04",
 						Value:  "abcd",

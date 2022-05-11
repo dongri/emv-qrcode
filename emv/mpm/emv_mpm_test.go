@@ -38,7 +38,7 @@ func TestEncode(t *testing.T) {
 						Value:  PointOfInitiationMethodDynamic,
 					},
 					MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
-						ID("29"): MerchantAccountInformationTLV{
+						ID("29"): {
 							Tag:    "29",
 							Length: "30",
 							Value: &MerchantAccountInformation{
@@ -48,7 +48,7 @@ func TestEncode(t *testing.T) {
 									Value:  "D15600000000",
 								},
 								PaymentNetworkSpecific: []TLV{
-									TLV{
+									{
 										Tag:    "05",
 										Length: "10",
 										Value:  "A93FO3230Q",
@@ -132,7 +132,7 @@ func TestEncode(t *testing.T) {
 						},
 					},
 					UnreservedTemplates: map[ID]UnreservedTemplateTLV{
-						ID("91"): UnreservedTemplateTLV{
+						ID("91"): {
 							Tag:    "91",
 							Length: "32",
 							Value: &UnreservedTemplate{
@@ -142,7 +142,7 @@ func TestEncode(t *testing.T) {
 									Value:  "A011223344998877",
 								},
 								ContextSpecificData: []TLV{
-									TLV{
+									{
 										Tag:    "07",
 										Length: "08",
 										Value:  "12345678",
@@ -206,7 +206,7 @@ func TestDecode(t *testing.T) {
 					Value:  PointOfInitiationMethodDynamic,
 				},
 				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
-					ID("29"): MerchantAccountInformationTLV{
+					ID("29"): {
 						Tag:    "29",
 						Length: "30",
 						Value: &MerchantAccountInformation{
@@ -216,7 +216,7 @@ func TestDecode(t *testing.T) {
 								Value:  "D15600000000",
 							},
 							PaymentNetworkSpecific: []TLV{
-								TLV{
+								{
 									Tag:    "05",
 									Length: "10",
 									Value:  "A93FO3230Q",
@@ -224,7 +224,7 @@ func TestDecode(t *testing.T) {
 							},
 						},
 					},
-					ID("31"): MerchantAccountInformationTLV{
+					ID("31"): {
 						Tag:    "31",
 						Length: "28",
 						Value: &MerchantAccountInformation{
@@ -234,7 +234,7 @@ func TestDecode(t *testing.T) {
 								Value:  "D15600000001",
 							},
 							PaymentNetworkSpecific: []TLV{
-								TLV{
+								{
 									Tag:    "03",
 									Length: "08",
 									Value:  "12345678",
@@ -318,7 +318,7 @@ func TestDecode(t *testing.T) {
 					},
 				},
 				UnreservedTemplates: map[ID]UnreservedTemplateTLV{
-					ID("91"): UnreservedTemplateTLV{
+					ID("91"): {
 						Tag:    "91",
 						Length: "32",
 						Value: &UnreservedTemplate{
@@ -328,7 +328,7 @@ func TestDecode(t *testing.T) {
 								Value:  "A011223344998877",
 							},
 							ContextSpecificData: []TLV{
-								TLV{
+								{
 									Tag:    "07",
 									Length: "08",
 									Value:  "12345678",
