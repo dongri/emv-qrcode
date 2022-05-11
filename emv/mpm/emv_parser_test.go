@@ -64,8 +64,14 @@ func TestNewParser(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewParser(tt.args.payload)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewParser() = %v, want %v", got, tt.want)
+			if got.current != tt.want.current {
+				t.Errorf("WantParser current = %v, want current = %v", got.current, tt.want.current)
+			}
+			if got.max != tt.want.max {
+				t.Errorf("WantParser max = %v, want max = %v", got.max, tt.want.max)
+			}
+			if !reflect.DeepEqual(got.source, tt.want.source) {
+				t.Errorf("WantParser source = %v, want source = %v", got.source, tt.want.source)
 			}
 		})
 	}
@@ -212,10 +218,16 @@ func TestParser_Next(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.parser.Next(); got != tt.want {
-				t.Errorf("Parser.Next() = %v, want %v", got, tt.want)
+				t.Errorf("Parser.Next() = %v, want = %v", got, tt.want)
 			}
-			if !reflect.DeepEqual(tt.parser, tt.wantParser) {
-				t.Errorf("WantParser = %v, want %v", tt.parser, tt.wantParser)
+			if tt.parser.current != tt.wantParser.current {
+				t.Errorf("WantParser current = %v, want current = %v", tt.parser.current, tt.wantParser.current)
+			}
+			if tt.parser.max != tt.wantParser.max {
+				t.Errorf("WantParser max = %v, want max = %v", tt.parser.max, tt.wantParser.max)
+			}
+			if !reflect.DeepEqual(tt.parser.source, tt.wantParser.source) {
+				t.Errorf("WantParser source = %v, want source = %v", tt.parser.source, tt.wantParser.source)
 			}
 		})
 	}
