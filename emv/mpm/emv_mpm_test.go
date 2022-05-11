@@ -186,7 +186,7 @@ func TestDecode(t *testing.T) {
 			args: args{
 				payload: "",
 			},
-			want:    nil,
+			want:    &EMVQR{},
 			wantErr: true,
 		},
 		{
