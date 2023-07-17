@@ -1,3 +1,3 @@
-module github.com/dongri/emv-qrcode
+module github.com/atompsv/emv-qrcode
 
 go 1.12
