@@ -962,21 +962,23 @@ func (c *EMVQR) Validate() error {
 	if len(c.MerchantAccountInformation) <= 0 {
 		return errors.New("MerchantAccountInformation is mandatory")
 	}
-	if c.MerchantCategoryCode.Value == "" {
-		return errors.New("MerchantCategoryCode is mandatory")
-	}
 	if c.TransactionCurrency.Value == "" {
 		return errors.New("TransactionCurrency is mandatory")
 	}
 	if c.CountryCode.Value == "" {
 		return errors.New("CountryCode is mandatory")
 	}
-	if c.MerchantName.Value == "" {
-		return errors.New("MerchantName is mandatory")
-	}
 	if c.MerchantCity.Value == "" {
 		return errors.New("MerchantCity is mandatory")
 	}
+
+	// if c.MerchantCategoryCode.Value == "" {
+	// 	return errors.New("MerchantCategoryCode is mandatory")
+	// }
+	// if c.MerchantName.Value == "" {
+	// 	return errors.New("MerchantName is mandatory")
+	// }
+
 	// check validate
 	if c.PointOfInitiationMethod.Value != "" {
 		if c.PointOfInitiationMethod.Value != PointOfInitiationMethodStatic && c.PointOfInitiationMethod.Value != PointOfInitiationMethodDynamic {
