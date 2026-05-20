@@ -18,8 +18,12 @@ import (
 const (
 	IDPayloadFormatIndicator               ID = "00" // (M) Payload Format Indicator
 	IDPointOfInitiationMethod              ID = "01" // (O) Point of Initiation Method
-	IDMerchantAccountInformationRangeStart ID = "02" // (M) 2-51 Merchant Account Information
-	IDMerchantAccountInformationRangeEnd   ID = "51" // (M) 2-51 Merchant Account Information
+	IDMerchantAccountInformationRangeStart          ID = "02" // (M) 2-51 Merchant Account Information
+	IDMerchantAccountInformationRangeEnd            ID = "51" // (M) 2-51 Merchant Account Information
+	IDMerchantAccountInformationPrimitiveRangeStart ID = "02" // (M) 2-25 Reserved for additional payment networks (primitive)
+	IDMerchantAccountInformationPrimitiveRangeEnd   ID = "25" // (M) 2-25 Reserved for additional payment networks (primitive)
+	IDMerchantAccountInformationTemplateRangeStart  ID = "26" // (M) 26-51 Merchant Account Information (template)
+	IDMerchantAccountInformationTemplateRangeEnd    ID = "51" // (M) 26-51 Merchant Account Information (template)
 	IDMerchantCategoryCode                 ID = "52" // (M) Merchant Category Code
 	IDTransactionCurrency                  ID = "53" // (M) Transaction Currency
 	IDTransactionAmount                    ID = "54" // (C) Transaction Amount
@@ -116,9 +120,12 @@ type MerchantAccountInformationTLV struct {
 }
 
 // MerchantAccountInformation ...
+// For tag 02-25 (primitive), only Value is populated.
+// For tag 26-51 (template), GloballyUniqueIdentifier and PaymentNetworkSpecific are populated.
 type MerchantAccountInformation struct {
-	GloballyUniqueIdentifier TLV   `json:"Globally Unique Identifier"`
-	PaymentNetworkSpecific   []TLV `json:"Payment network specific"`
+	Value                    string `json:"Value,omitempty"`
+	GloballyUniqueIdentifier TLV    `json:"Globally Unique Identifier"`
+	PaymentNetworkSpecific   []TLV  `json:"Payment network specific"`
 }
 
 // AdditionalDataFieldTemplate ...
@@ -470,6 +477,10 @@ func (s *MerchantAccountInformationTLV) DataWithType(dataType DataType, indent s
 	if s == nil {
 		return ""
 	}
+	if s.Value != nil && s.Value.Value != "" {
+		tlv := TLV{Tag: s.Tag, Length: s.Length, Value: s.Value.Value}
+		return tlv.DataWithType(dataType, "")
+	}
 	return s.Tag.String() + " " + s.Length + "\n" + s.Value.DataWithType(dataType, indent)
 }
 
@@ -497,6 +508,9 @@ func (s *MerchantAccountInformation) String() string {
 	if s == nil {
 		return ""
 	}
+	if s.Value != "" {
+		return s.Value
+	}
 	t := ""
 	t += s.GloballyUniqueIdentifier.String()
 	sort.Slice(s.PaymentNetworkSpecific, func(i, j int) bool {
@@ -511,6 +525,9 @@ func (s *MerchantAccountInformation) String() string {
 // DataWithType ...
 func (s *MerchantAccountInformation) DataWithType(dataType DataType, indent string) string {
 	if s == nil {
+		return ""
+	}
+	if s.Value != "" {
 		return ""
 	}
 	var pnsData string
@@ -910,8 +927,17 @@ func ParseEMVQR(payload string) (*EMVQR, error) {
 				within bool
 				err    error
 			)
-			// Merchant Account Information
-			within, err = id.Between(IDMerchantAccountInformationRangeStart, IDMerchantAccountInformationRangeEnd)
+			// Merchant Account Information (primitive: 02-25)
+			within, err = id.Between(IDMerchantAccountInformationPrimitiveRangeStart, IDMerchantAccountInformationPrimitiveRangeEnd)
+			if err != nil {
+				return nil, err
+			}
+			if within {
+				emvqr.AddMerchantAccountInformation(id, &MerchantAccountInformation{Value: value})
+				continue
+			}
+			// Merchant Account Information (template: 26-51)
+			within, err = id.Between(IDMerchantAccountInformationTemplateRangeStart, IDMerchantAccountInformationTemplateRangeEnd)
 			if err != nil {
 				return nil, err
 			}

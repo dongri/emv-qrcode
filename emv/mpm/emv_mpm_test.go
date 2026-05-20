@@ -346,6 +346,92 @@ func TestDecode(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "primitive MAI (tag 02-25) treated as raw value",
+			args: args{
+				payload: "00020101021115312031041800520446JDBMSZZXE44BFS038680016A00526628466257701083217041802030020325mchVKyozC3MbjS51h67qal4Os5204581253034185802LA5915JDBMSZZXE44BFS06009Vientiane63043F88",
+			},
+			want: &EMVQR{
+				PayloadFormatIndicator: TLV{
+					Tag:    IDPayloadFormatIndicator,
+					Length: "02",
+					Value:  "01",
+				},
+				PointOfInitiationMethod: TLV{
+					Tag:    IDPointOfInitiationMethod,
+					Length: "02",
+					Value:  PointOfInitiationMethodStatic,
+				},
+				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
+					ID("15"): {
+						Tag:    "15",
+						Length: "31",
+						Value: &MerchantAccountInformation{
+							Value: "2031041800520446JDBMSZZXE44BFS0",
+						},
+					},
+					ID("38"): {
+						Tag:    "38",
+						Length: "68",
+						Value: &MerchantAccountInformation{
+							GloballyUniqueIdentifier: TLV{
+								Tag:    "00",
+								Length: "16",
+								Value:  "A005266284662577",
+							},
+							PaymentNetworkSpecific: []TLV{
+								{
+									Tag:    "01",
+									Length: "08",
+									Value:  "32170418",
+								},
+								{
+									Tag:    "02",
+									Length: "03",
+									Value:  "002",
+								},
+								{
+									Tag:    "03",
+									Length: "25",
+									Value:  "mchVKyozC3MbjS51h67qal4Os",
+								},
+							},
+						},
+					},
+				},
+				MerchantCategoryCode: TLV{
+					Tag:    IDMerchantCategoryCode,
+					Length: "04",
+					Value:  "5812",
+				},
+				TransactionCurrency: TLV{
+					Tag:    IDTransactionCurrency,
+					Length: "03",
+					Value:  "418",
+				},
+				CountryCode: TLV{
+					Tag:    IDCountryCode,
+					Length: "02",
+					Value:  "LA",
+				},
+				MerchantName: TLV{
+					Tag:    IDMerchantName,
+					Length: "15",
+					Value:  "JDBMSZZXE44BFS0",
+				},
+				MerchantCity: TLV{
+					Tag:    IDMerchantCity,
+					Length: "09",
+					Value:  "Vientiane",
+				},
+				CRC: TLV{
+					Tag:    IDCRC,
+					Length: "04",
+					Value:  "3F88",
+				},
+			},
+			wantErr: false,
+		},
+		{
 			name: "failed parse",
 			args: args{
 				payload: "00020", // not enough length

@@ -758,7 +758,7 @@ func Test_ParseEMVQR(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "parse merchant account information",
+			name: "parse merchant account information (primitive)",
 			args: args{
 				payload: "02160004hoge0104abcd",
 			},
@@ -766,6 +766,24 @@ func Test_ParseEMVQR(t *testing.T) {
 				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
 					ID("02"): {
 						Tag:    "02",
+						Length: "16",
+						Value: &MerchantAccountInformation{
+							Value: "0004hoge0104abcd",
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "parse merchant account information (template)",
+			args: args{
+				payload: "26160004hoge0104abcd",
+			},
+			want: &EMVQR{
+				MerchantAccountInformation: map[ID]MerchantAccountInformationTLV{
+					ID("26"): {
+						Tag:    "26",
 						Length: "16",
 						Value: &MerchantAccountInformation{
 							GloballyUniqueIdentifier: TLV{
@@ -789,7 +807,7 @@ func Test_ParseEMVQR(t *testing.T) {
 		{
 			name: "parse failed merchant account information",
 			args: args{
-				payload: "02140004hoge0104", // not enough length
+				payload: "26140004hoge0104", // not enough length
 			},
 			want:    nil,
 			wantErr: true,
@@ -805,18 +823,7 @@ func Test_ParseEMVQR(t *testing.T) {
 						Tag:    "02",
 						Length: "16",
 						Value: &MerchantAccountInformation{
-							GloballyUniqueIdentifier: TLV{
-								Tag:    "00",
-								Length: "04",
-								Value:  "hoge",
-							},
-							PaymentNetworkSpecific: []TLV{
-								{
-									Tag:    "01",
-									Length: "04",
-									Value:  "abcd",
-								},
-							},
+							Value: "0004hoge0104abcd",
 						},
 					},
 					ID("26"): {
