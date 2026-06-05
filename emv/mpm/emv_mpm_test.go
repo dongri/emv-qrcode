@@ -186,7 +186,7 @@ func TestDecode(t *testing.T) {
 			args: args{
 				payload: "",
 			},
-			want:    &EMVQR{},
+			want:    nil,
 			wantErr: true,
 		},
 		{
@@ -439,6 +439,22 @@ func TestDecode(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 		},
+		{
+			name: "wrong CRC",
+			args: args{
+				payload: "00020101021229300012D156000000000510A93FO3230Q31280012D15600000001030812345678520441115802CN5914BEST TRANSPORT6007BEIJING64200002ZH0104最佳运输0202北京540523.7253031565502016233030412340603***0708A60086670902ME91320016A0112233449988770708123456786304FFFF",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "missing CRC",
+			args: args{
+				payload: "00020101021229300012D156000000000510A93FO3230Q31280012D15600000001030812345678520441115802CN5914BEST TRANSPORT6007BEIJING64200002ZH0104最佳运输0202北京540523.7253031565502016233030412340603***0708A60086670902ME91320016A011223344998877070812345678",
+			},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -449,6 +465,97 @@ func TestDecode(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Decode() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCheckCRC(t *testing.T) {
+	// Payloads constructed as base+"XXXX" where XXXX = CRC16-CCITT-FALSE(base).
+	// Values computed by iterating base strings until the CRC had leading zeros.
+	tests := []struct {
+		name    string
+		payload string
+		crc     string
+		wantErr bool
+	}{
+		{
+			// CRC has no leading zeros — baseline positive case.
+			name:    "valid CRC no leading zeros",
+			payload: "00020101021229300012D156000000000510A93FO3230Q31280012D15600000001030812345678520441115802CN5914BEST TRANSPORT6007BEIJING64200002ZH0104最佳运输0202北京540523.7253031565502016233030412340603***0708A60086670902ME91320016A0112233449988770708123456786304A13A",
+			crc:     "A13A",
+			wantErr: false,
+		},
+		{
+			// CRC = 0x0194: one leading zero. strconv.FormatUint produces "194" (3 chars)
+			// instead of "0194" (4 chars), causing a false mismatch before this fix.
+			name:    "valid CRC one leading zero",
+			payload: "00021263040194",
+			crc:     "0194",
+			wantErr: false,
+		},
+		{
+			// CRC = 0x00C0: two leading zeros.
+			name:    "valid CRC two leading zeros",
+			payload: "0002210630400C0",
+			crc:     "00C0",
+			wantErr: false,
+		},
+		{
+			// CRC = 0x000B: three leading zeros.
+			name:    "valid CRC three leading zeros",
+			payload: "000262966304000B",
+			crc:     "000B",
+			wantErr: false,
+		},
+		{
+			// CRC argument is lowercase — checkCRC must normalise before comparing.
+			name:    "valid CRC lowercase",
+			payload: "00021263040194",
+			crc:     "0194",
+			wantErr: false,
+		},
+		{
+			// Payload has extra data appended after the CRC field.
+			// Last 4 chars are "XTRA", not the CRC value "0194".
+			name:    "CRC not at end of payload",
+			payload: "00021263040194EXTRA",
+			crc:     "0194",
+			wantErr: true,
+		},
+		{
+			// The 4 chars before the CRC value are not "6304" (tag+length).
+			// Chars at [-8:-4] are "ABCD", so the CRC TLV boundary is wrong.
+			name:    "CRC tag missing before value",
+			payload: "00021263ABCD0194",
+			crc:     "0194",
+			wantErr: true,
+		},
+		{
+			// Payload is only 4 chars — too short to contain the 8-char CRC TLV.
+			name:    "payload too short",
+			payload: "6304",
+			crc:     "0194",
+			wantErr: true,
+		},
+		{
+			name:    "empty CRC",
+			payload: "00021263040194",
+			crc:     "",
+			wantErr: true,
+		},
+		{
+			name:    "wrong CRC",
+			payload: "00021263040194",
+			crc:     "FFFF",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := checkCRC(tt.payload, tt.crc)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("checkCRC() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
